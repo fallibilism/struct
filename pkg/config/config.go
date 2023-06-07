@@ -1,5 +1,11 @@
 package config
 
+import (
+	"database/sql"
+
+	"github.com/redis/go-redis/v9"
+)
+
 const (
 	ViewPath     = "views"
 	ViewExt      = ".html"
@@ -16,9 +22,17 @@ var (
 		Port: "8080",
 		Host: "localhost",
 	}
+	App     = &AppConfig{}
+	Livekit = LivekitConfig{
+		Host:   "http://localhost:7880",
+		ApiKey: "api_key",
+		Secret: "secret",
+	}
 )
 
-type Config struct {
+type AppConfig struct {
+	DB    *sql.DB
+	Redis *redis.Client
 }
 
 type PrometheusConfig struct {
@@ -34,4 +48,10 @@ type ServerConfig struct {
 	Port string
 	// Host for server
 	Host string
+}
+
+type LivekitConfig struct {
+	Host   string
+	ApiKey string
+	Secret string
 }

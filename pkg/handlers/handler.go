@@ -69,6 +69,7 @@ func (r *Routes) middleware() {
 func (r *Routes) routes() {
 	app := r.App
 
+	app.Get("/health-check", controllers.HandleHealthCheck)
 	app.Post("/webhook", controllers.HandleWebhook)
 	app.Get("/download/uploadedFile/:sid/*", controllers.HandleDownloadUploadedFile)
 	app.Get("/download/recording/:token", controllers.HandleDownloadRecording)
