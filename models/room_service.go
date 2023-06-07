@@ -74,6 +74,14 @@ func (r *RoomService) LoadParticipants(roomId string) ([]*livekit.ParticipantInf
 }
 
 func (r *RoomService) CreateRoom(roomId string) (*livekit.Room, error) {
+
+	if _, err := r.LoadRoom(roomId); err == nil {
+		if err == errorRoomNotFound {
+			return nil, errorRoomExists
+		}
+		return nil, err
+	}
+
 	req := livekit.CreateRoomRequest{
 		Name: roomId,
 	}
@@ -87,17 +95,17 @@ func (r *RoomService) CreateRoom(roomId string) (*livekit.Room, error) {
 	return room, nil
 }
 
-func (r *RoomService) DeleteRoom(roomId string) (string, err error) {
+// delete livekit room given a room id
+func (r *RoomService) DeleteRoom(roomId string) (string, error) {
 	req := livekit.DeleteRoomRequest{
 		Room: roomId,
 	}
 
 	res, err := r.livekitClient.DeleteRoom(r.ctx, &req)
-	x := res
 	if err != nil {
 		log.Printf("Error deleting room: %v", err)
 		return "", err
 	}
 
-	return 
+	return res.String(), nil
 }
