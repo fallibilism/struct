@@ -1,0 +1,30 @@
+name: struct
+development: true
+port: 3000
+log_level: WARN 
+ssl:
+  key: /path/to/key
+  cert: /path/to/certificate
+
+redis:
+  host: host.docker.internal
+  port: 0000    
+
+postgres:
+  host: host.docker.internal
+  port: 0000
+  password: password
+  database: database
+
+prometheus:
+  path: /metrics
+  namespace: v
+  enabled: true
+  
+livekit:
+  host: xxx
+  api_key: xxx
+  password: xxx
+  setting: ./livekit.yaml
+
+

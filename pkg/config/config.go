@@ -55,3 +55,25 @@ type LivekitConfig struct {
 	ApiKey string
 	Secret string
 }
+
+type RedisConfig struct {
+	Host              string   `yaml:"host"`
+	Username          string   `yaml:"username"`
+	Password          string   `yaml:"password"`
+	DBName            int      `yaml:"db"`
+	UseTLS            bool     `yaml:"use_tls"`
+}
+
+type PostgresConfig struct {
+	Host     string `yaml:"host"`
+	Port     int32  `yaml:"port"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+	DBName   string `yaml:"db"`
+	Prefix   string `yaml:"prefix"`
+	SslMode	 string `yaml:"sslmode" default:"disable"`
+}
+
+func SetConfig(c AppConfig) {
+	App = c;
+}

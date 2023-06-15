@@ -7,8 +7,19 @@ import (
 )
 
 func HandleAuthHeaderCheck(c *fiber.Ctx) error {
+	api_key := c.Get("API_KEY", "")
+	hash_signature := c.Get("HASH", "")
+	body := c.Body()
+
+	// check if api key exists
+
+	// unhash signature
+
+	// compare signatures
+
 	log.Panicf("[%s] Not implemented", "HandleAuthHeaderCheck")
-	return nil
+	return c.Next()
+	//return nil
 }
 
 func HandleGenerateJoinToken(c *fiber.Ctx) error {
@@ -17,8 +28,16 @@ func HandleGenerateJoinToken(c *fiber.Ctx) error {
 }
 
 func HandleVerifyHeaderToken(c *fiber.Ctx) error {
+	authToken := c.Get("Authorization")
+	
+	if authToken == "" {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+	
+	// validate token
+
 	log.Panicf("[%s] Not implemented", "HandleVerifyHeaderToken")
-	return nil
+	return c.Next()
 }
 
 func HandleVerifyToken(c *fiber.Ctx) error {
