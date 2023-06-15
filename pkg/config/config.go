@@ -30,6 +30,10 @@ var (
 	}
 )
 
+var Redis RedisConfig
+var Postgres PostgresConfig
+var Openai OpenAIConfig
+
 type AppConfig struct {
 	DB    *sql.DB
 	Redis *redis.Client
@@ -51,9 +55,9 @@ type ServerConfig struct {
 }
 
 type LivekitConfig struct {
-	Host   string
-	ApiKey string
-	Secret string
+	Host   string `yaml:"host"`
+	ApiKey string `yaml:"api_key"`
+	Secret string `yaml:"secret"`
 }
 
 type RedisConfig struct {
@@ -74,6 +78,35 @@ type PostgresConfig struct {
 	SslMode	 string `yaml:"sslmode" default:"disable"`
 }
 
-func SetConfig(c AppConfig) {
-	App = c;
+// OPEN AI CONFIG 
+type OpenAIConfig struct {
+	ApiKey string `yaml:"api_key"`
+	Secret string `yaml:"secret"`
+}
+
+type Config struct {
+	App *AppConfig
+	Openai OpenAIConfig `yaml:"open_ai"`
+	Logging string `yaml:"logging"`
+	Postgres PostgresConfig `yaml:"postgres"`
+	Redis RedisConfig `yaml:"redis"`
+	Livekit LivekitConfig `yaml:"livekit"`
+}
+
+func SetConfig(filename string) {
+	conf := &Conf {
+
+	}
+
+	conf := &Config{}
+
+	if content != "" {
+		if err := yaml.Unmarshal([]byte(content), conf); err != nil {
+			return nil, fmt.Errorf("could not parse config: %v", err)
+		}
+	}
+
+	Openai = conf.Openai
+	PostgresConfig = conf.Postgres
+	Openai = conf.Openai
 }
