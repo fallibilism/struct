@@ -7,6 +7,6 @@ import (
 )
 
 func HandleWebhook(c *fiber.Ctx) error {
-	log.Panicf("[%s] Not implemented", "HandlerWebhook")
+	log.Panicf("[%s] Not implemented", "HandleWebhook")
 	return nil
 }
