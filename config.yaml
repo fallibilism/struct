@@ -1,6 +1,6 @@
 name: struct
 development: true
-port: 8080
+port: 3000
 log_level: WARN 
 ssl:
   key: /path/to/key
@@ -8,22 +8,21 @@ ssl:
 
 redis:
   # host: host.docker.internal 
-  host: 172.23.0.2
+  host: localhost
   username: redis
   password: 1234
-  port: 5432
+  port: 6379
   db: 1
   use_tls: true
 
 
 postgres:
-  # host: host.docker.internal
-  host: 172.23.0.2
-  port: 6379
-  password: password
-  database: struct
-  username: struct
-  sslmode: disable
+  username: doadmin
+  password : AVNS_-OK3KDjBah18nx3cALr
+  host: db-postgresql-fra1-42722-do-user-9369539-0.b.db.ondigitalocean.com
+  port: 25060
+  database: defaultdb
+  sslmode: require
 
 prometheus:
   path: /metrics

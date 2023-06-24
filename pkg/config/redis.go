@@ -19,7 +19,7 @@ func NewRedisConnection(c *RedisConfig) (*redis.Client, error) {
 	}
 
 	rdb = redis.NewClient(&redis.Options{
-		Addr:      c.Host,
+		Addr:      c.Host + ":" + string(c.Port),
 		Username:  c.Username,
 		Password:  c.Password,
 		DB:        c.DBName,

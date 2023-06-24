@@ -41,22 +41,20 @@ func main() {
 
 func runServer(c *cli.Context) error {
 
-	config.SetConfig(c.String("config"))
+	conf := config.SetConfig(c.String("config"))
 
 	router := handlers.Handler()
 
-	println("config.Postgres")
-	db, err := config.NewDbConnection(&config.Postgres)
-	println("config.Postgres")
+	db, err := config.NewDbConnection(&conf.Postgres)
 	if err != nil {
 		log.Panicln("could not connect to database", "error", err)
 	}
 
-	// redis, err := config.NewRedisConnection(&config.Redis)
+	redis, err := config.NewRedisConnection(config.Redis)
 
 	appConf := &config.AppConfig{
-		DB: db,
-		// Redis: redis,
+		DB:    db,
+		Redis: redis,
 	}
 
 	config.TestConfig = appConf // a hack for testing

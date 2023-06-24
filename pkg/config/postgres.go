@@ -10,15 +10,17 @@ import (
 const DBConnectionError = "failed to connect to db"
 
 func NewDbConnection(c *PostgresConfig) (*gorm.DB, error) {
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s TimeZone=%s", c.Host, c.Username, c.Password, c.DBName, c.Port, c.SslMode, c.TimeZone)
+	DSN := fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=%s", c.Username, c.Password, c.Host, c.Port, c.DBName, c.SslMode)
 
-	var db *gorm.DB
-	var err error
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		DSN: DSN,
+	}))
 
-	db, err = gorm.Open(postgres.New(postgres.Config{
-		DSN: dsn,
-		// PreferSimpleProtocol: true, // disables implicit prepared statement usage
-	}), &gorm.Config{})
+	// DSN: "postgresql://doadmin:AVNS_-OK3KDjBah18nx3cALr@db-postgresql-fra1-42722-do-user-9369539-0.b.db.ondigitalocean.com:25060/defaultdb?sslmode=require",
+	// DriverName: "cloudsqlpostgres",
+	// Conn:       sqlDb,
+	// PreferSimpleProtocol: true, // disables implicit prepared statement usage
+	// defer db.Close()
 
 	if err != nil {
 		return nil, fmt.Errorf("%s: %v", DBConnectionError, err)

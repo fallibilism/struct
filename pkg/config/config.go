@@ -31,9 +31,9 @@ var (
 	}
 )
 
-var Redis RedisConfig
-var Postgres PostgresConfig
-var Openai OpenAIConfig
+var Redis *RedisConfig
+var Postgres *PostgresConfig
+var Openai *OpenAIConfig
 
 type AppConfig struct {
 	DB    *gorm.DB
@@ -65,6 +65,7 @@ type RedisConfig struct {
 	Host     string `yaml:"host"`
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
+	Port     int32  `yaml:"port"`
 	DBName   int    `yaml:"db"`
 	UseTLS   bool   `yaml:"use_tls"`
 }
@@ -97,13 +98,14 @@ type Config struct {
 	Livekit      LivekitConfig  `yaml:"livekit"`
 }
 
-func SetConfig(filename string) {
+func SetConfig(filename string) (conf *Config) {
 	conf, err := utils.ReadFile(filename, &Config{})
 	if err != nil {
-		panic(err)
+		panic("config: " + err.Error())
 	}
 
-	Openai = conf.Openai
-	Postgres = conf.Postgres
-	Redis = conf.Redis
+	Openai = &conf.Openai
+	Postgres = &conf.Postgres
+	Redis = &conf.Redis
+	return conf
 }
