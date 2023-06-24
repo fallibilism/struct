@@ -2,20 +2,20 @@ package models
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"log"
 	"v/pkg/config"
 
 	"github.com/livekit/protocol/livekit"
 	lksdk "github.com/livekit/server-sdk-go"
+	"gorm.io/gorm"
 
 	"github.com/redis/go-redis/v9"
 )
 
 type RoomService struct {
 	app           *config.AppConfig
-	db            *sql.DB
+	pg            *gorm.DB
 	redis         *redis.Client
 	livekitClient *lksdk.RoomServiceClient
 	ctx           context.Context
@@ -26,12 +26,11 @@ var (
 	errorRoomExists   = errors.New("room already exists")
 )
 
-func NewRoomService() *RoomService {
+func NewRoomService(conf *config.AppConfig) *RoomService {
 	livekitClient := lksdk.NewRoomServiceClient(config.Livekit.Host, config.Livekit.ApiKey, config.Livekit.Secret)
 	return &RoomService{
-		app:           config.App,
-		db:            config.App.DB,
-		redis:         config.App.Redis,
+		pg:            conf.DB,
+		redis:         conf.Redis,
 		livekitClient: livekitClient,
 		ctx:           context.Background(),
 	}

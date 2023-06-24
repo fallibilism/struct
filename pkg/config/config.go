@@ -1,9 +1,10 @@
 package config
 
 import (
-	"database/sql"
+	"v/pkg/utils"
 
 	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
 )
 
 const (
@@ -22,8 +23,8 @@ var (
 		Port: "8080",
 		Host: "localhost",
 	}
-	App     = &AppConfig{}
-	Livekit = LivekitConfig{
+	TestConfig = &AppConfig{} //hack to get Config in test
+	Livekit    = LivekitConfig{
 		Host:   "http://localhost:7880",
 		ApiKey: "api_key",
 		Secret: "secret",
@@ -35,7 +36,7 @@ var Postgres PostgresConfig
 var Openai OpenAIConfig
 
 type AppConfig struct {
-	DB    *sql.DB
+	DB    *gorm.DB
 	Redis *redis.Client
 }
 
@@ -61,11 +62,11 @@ type LivekitConfig struct {
 }
 
 type RedisConfig struct {
-	Host              string   `yaml:"host"`
-	Username          string   `yaml:"username"`
-	Password          string   `yaml:"password"`
-	DBName            int      `yaml:"db"`
-	UseTLS            bool     `yaml:"use_tls"`
+	Host     string `yaml:"host"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+	DBName   int    `yaml:"db"`
+	UseTLS   bool   `yaml:"use_tls"`
 }
 
 type PostgresConfig struct {
@@ -73,40 +74,36 @@ type PostgresConfig struct {
 	Port     int32  `yaml:"port"`
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
-	DBName   string `yaml:"db"`
+	DBName   string `yaml:"database"`
 	Prefix   string `yaml:"prefix"`
-	SslMode	 string `yaml:"sslmode" default:"disable"`
+	SslMode  string `yaml:"sslmode" default:"disable"`
+	TimeZone string `yaml:"timezone" default:"Asia/Jakarta"`
 }
 
-// OPEN AI CONFIG 
+// OPEN AI CONFIG
 type OpenAIConfig struct {
 	ApiKey string `yaml:"api_key"`
 	Secret string `yaml:"secret"`
 }
 
 type Config struct {
-	App *AppConfig
-	Openai OpenAIConfig `yaml:"open_ai"`
-	Logging string `yaml:"logging"`
-	Postgres PostgresConfig `yaml:"postgres"`
-	Redis RedisConfig `yaml:"redis"`
-	Livekit LivekitConfig `yaml:"livekit"`
+	Name         string         `yaml:"name"`
+	Developement bool           `yaml:"developement"`
+	Port         uint           `yaml:"port"`
+	Openai       OpenAIConfig   `yaml:"open_ai"`
+	Logging      string         `yaml:"logging"`
+	Postgres     PostgresConfig `yaml:"postgres"`
+	Redis        RedisConfig    `yaml:"redis"`
+	Livekit      LivekitConfig  `yaml:"livekit"`
 }
 
 func SetConfig(filename string) {
-	conf := &Conf {
-
-	}
-
-	conf := &Config{}
-
-	if content != "" {
-		if err := yaml.Unmarshal([]byte(content), conf); err != nil {
-			return nil, fmt.Errorf("could not parse config: %v", err)
-		}
+	conf, err := utils.ReadFile(filename, &Config{})
+	if err != nil {
+		panic(err)
 	}
 
 	Openai = conf.Openai
-	PostgresConfig = conf.Postgres
-	Openai = conf.Openai
+	Postgres = conf.Postgres
+	Redis = conf.Redis
 }

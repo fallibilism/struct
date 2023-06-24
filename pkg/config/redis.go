@@ -3,10 +3,11 @@ package config
 import (
 	"context"
 	"crypto/tls"
+
 	"github.com/redis/go-redis/v9"
 )
 
-func NewRedisConn(c *RedisConfig) (*redis.Client, error) {
+func NewRedisConnection(c *RedisConfig) (*redis.Client, error) {
 
 	var rdb *redis.Client
 	var tlsConfig *tls.Config
@@ -30,6 +31,6 @@ func NewRedisConn(c *RedisConfig) (*redis.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return rdb, nil
 }

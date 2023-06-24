@@ -43,7 +43,15 @@ func (r *Routes) Listen() error {
 	return r.App.Listen(config.Server.Host + ":" + config.Server.Port)
 }
 func (r *Routes) Shutdown() error {
-	log.Panicf("[%s] Not implemented", "Shutdown")
+
+	log.Printf("Gracefully shutting down server...")
+
+	// close database connection
+	// close redis connection
+	r.App.Shutdown()
+
+	log.Printf("Server shutdown successful")
+
 	return nil
 }
 

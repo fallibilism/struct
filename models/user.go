@@ -1,15 +1,15 @@
 package models
 
 import (
-	"database/sql"
 	"errors"
 	"v/pkg/config"
 
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
 type UserModel struct {
-	db *sql.DB
+	db *gorm.DB
 	rs *RoomService
 }
 
@@ -21,17 +21,25 @@ type User struct {
 	IsActive bool   `json:"is_active"`
 }
 
-func NewUserModel() *UserModel {
+const (
+	AdminOnlyError = "You are not authorized to access this room. Only admin can access this room"
+)
+
+func NewUserModel(conf *config.AppConfig) *UserModel {
 	return &UserModel{
-		db: config.App.DB,
-		rs: NewRoomService(),
+		db: conf.DB,
+		rs: NewRoomService(conf),
 	}
 }
 
-// TODO: 😴 replace with gorm
 func (u *UserModel) Create(user *User) error {
-	_, err := u.db.Exec("INSERT INTO users (id, room_id, name, role, is_active) VALUES (?, ?, ?, ?, ?)", user.Id, user.RoomId, user.Name, user.Role, user.IsActive)
-	if err != nil {
+	if err := u.db.Create(&User{
+		Id:       user.Id,
+		RoomId:   user.RoomId,
+		Name:     user.Name,
+		Role:     user.Role,
+		IsActive: user.IsActive,
+	}).Error; err != nil {
 		return err
 	}
 
@@ -40,16 +48,16 @@ func (u *UserModel) Create(user *User) error {
 
 func (u *UserModel) Validation(c *fiber.Ctx) error {
 	admin := c.Locals("admin")
-	roomId := c.Params("roomId")
+	roomId := c.Locals("roomId")
 
-	if isAdmin, ok := admin.(bool); ok {
+	if isAdmin, ok := admin.(bool); ok && !isAdmin {
 		if !isAdmin {
-			return fiber.NewError(fiber.StatusUnauthorized, "You are not authorized to access this room")
+			return fiber.NewError(fiber.StatusUnauthorized, AdminOnlyError)
 		}
 	}
 
 	if roomId == "" {
-		return fiber.NewError(fiber.StatusNotFound, "Room not found")
+		return fiber.NewError(fiber.StatusNotFound, "Room ID not found")
 	}
 
 	return nil

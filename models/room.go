@@ -2,12 +2,12 @@ package models
 
 import (
 	"context"
-	"database/sql"
 	"sync"
 	"time"
 	"v/pkg/config"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Room struct {
@@ -26,15 +26,14 @@ type Room struct {
 
 type RoomModel struct {
 	app *config.AppConfig
-	db  *sql.DB
+	db  *gorm.DB
 	ctx context.Context
 	sync.Mutex
 }
 
-func NewRoomModel() *RoomModel {
+func NewRoomModel(conf *config.AppConfig) *RoomModel {
 	return &RoomModel{
-		app: config.App,
-		db:  config.App.DB,
+		db:  conf.DB,
 		ctx: context.Background(),
 	}
 }

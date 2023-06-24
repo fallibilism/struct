@@ -2,11 +2,11 @@ package models
 
 import (
 	"context"
-	"database/sql"
 	"sync"
 	"v/pkg/config"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Token struct {
@@ -19,15 +19,14 @@ type Token struct {
 
 type TokenModel struct {
 	app *config.AppConfig
-	db  *sql.DB
+	db  *gorm.DB
 	ctx context.Context
 	sync.Mutex
 }
 
-func NewTokenModel() *TokenModel {
+func NewTokenModel(conf *config.AppConfig) *TokenModel {
 	return &TokenModel{
-		app: config.App,
-		db:  config.App.DB,
+		db:  conf.DB,
 		ctx: context.Background(),
 	}
 }

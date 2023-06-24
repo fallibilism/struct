@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"v/pkg/config"
 	"v/pkg/handlers"
 
 	"github.com/urfave/cli/v2"
@@ -17,9 +18,9 @@ func main() {
 	}
 
 	app := &cli.App{
-		Name:        "plugnmeet-server",
-		Usage:       "Scalable, Open source web conference system",
-		Description: "without option will start server",
+		Name:        "struct",
+		Usage:       "video conference system",
+		Description: "xxx",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "config",
@@ -40,7 +41,29 @@ func main() {
 
 func runServer(c *cli.Context) error {
 
+	config.SetConfig(c.String("config"))
+
 	router := handlers.Handler()
+
+	println("config.Postgres")
+	db, err := config.NewDbConnection(&config.Postgres)
+	println("config.Postgres")
+	if err != nil {
+		log.Panicln("could not connect to database", "error", err)
+	}
+
+	// redis, err := config.NewRedisConnection(&config.Redis)
+
+	appConf := &config.AppConfig{
+		DB: db,
+		// Redis: redis,
+	}
+
+	config.TestConfig = appConf // a hack for testing
+
+	if err != nil {
+		log.Panicln("could not connect to redis", "error", err)
+	}
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)

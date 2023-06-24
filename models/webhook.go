@@ -26,12 +26,12 @@ type webhookEvent struct {
 	// roomModel      *RoomModel
 }
 
-func NewWebhook(event *livekit.WebhookEvent) {
+func NewWebhook(conf *config.AppConfig, event *livekit.WebhookEvent) {
 	wh := &webhookEvent{
-		rc:          config.App.Redis,
+		rc:          conf.Redis,
 		ctx:         context.Background(),
 		event:       event,
-		RoomService: NewRoomService(),
+		RoomService: NewRoomService(conf),
 	}
 
 	switch event.GetEvent() {
