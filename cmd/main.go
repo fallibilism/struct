@@ -8,8 +8,10 @@ import (
 	"syscall"
 	"v/pkg/config"
 	"v/pkg/handlers"
+	"v/pkg/models"
 
 	"github.com/urfave/cli/v2"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -45,7 +47,7 @@ func runServer(c *cli.Context) error {
 
 	router := handlers.Handler()
 
-	err := config.SetupConnections(conf)
+	err := setupConnections(conf)
 	// println("ignore setup connection for now")
 
 	if err != nil {
@@ -61,4 +63,40 @@ func runServer(c *cli.Context) error {
 		_ = router.Shutdown()
 	}()
 	return router.Listen()
+}
+
+// redis and postgres connection setup
+func setupConnections(conf *config.Config) error {
+
+	db, err := config.NewDbConnection(&conf.Postgres)
+	if err != nil {
+		err := fmt.Errorf("could not connect to database: %v", err)
+		return err
+	}
+
+	migrations(db)
+	// redis, err := NewRedisConnection(&conf.Redis)
+
+	// if err != nil {
+	// 	err := fmt.Errorf("could not connect to redis: %v", err)
+	// 	return err
+	// }
+
+	appConf := &config.AppConfig{
+		DB: db,
+		// Redis: redis,
+	}
+
+	// config.TestConfig = appConf // a hack for testing
+	config.App = appConf
+
+	return nil
+
+}
+
+// model migration here
+func migrations(db *gorm.DB) {
+
+	db.AutoMigrate(&models.Room{})
+
 }

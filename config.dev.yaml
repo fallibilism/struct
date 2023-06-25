@@ -20,6 +20,7 @@ redis:
 postgres:
   # host: host.docker.internal
   host: localhost
+  external: false
   port: 6379
   password: password
   database: struct

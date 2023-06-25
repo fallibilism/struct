@@ -18,11 +18,13 @@ redis:
 
 
 postgres:
-  username: doadmin
-  password : AVNS_-OK3KDjBah18nx3cALr
-  host: db-postgresql-fra1-42722-do-user-9369539-0.b.db.ondigitalocean.com
+  external: true
+  username: xxxxxxx
+  password : xxxxxxxxxxxxxxxxxxxxxxxx
+  uri: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  host: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   port: 25060
-  database: defaultdb
+  database: xxxxxxxxx
   sslmode: require
 
 prometheus:

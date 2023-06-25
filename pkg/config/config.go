@@ -1,9 +1,11 @@
 package config
 
 import (
-	"fmt"
+	"os"
+	"strconv"
 	"v/pkg/utils"
 
+	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
@@ -82,6 +84,9 @@ type PostgresConfig struct {
 	Prefix   string `yaml:"prefix"`
 	SslMode  string `yaml:"sslmode" default:"disable"`
 	TimeZone string `yaml:"timezone" default:"Asia/Jakarta"`
+
+	External bool   `yaml:"external"`
+	URI      string `env:"POSTGRES_URI"`
 }
 
 // OPEN AI CONFIG
@@ -104,6 +109,9 @@ type Config struct {
 }
 
 func SetConfig(filename string) (conf *Config) {
+	if err := godotenv.Load(); err != nil {
+		panic("config: " + err.Error())
+	}
 	conf, err := utils.ReadFile(filename, &Config{})
 	if err != nil {
 		panic("config: " + err.Error())
@@ -113,33 +121,22 @@ func SetConfig(filename string) (conf *Config) {
 	Postgres = &conf.Postgres
 	Redis = &conf.Redis
 	Conf = conf
+
+	// environmental variables override config
+	if v := os.Getenv("PORT"); v != "" {
+		port, err := strconv.Atoi(v)
+		if err == nil {
+			conf.Port = uint(port)
+		}
+	}
+
+	if v := os.Getenv("JWT_SECRET"); v != "" {
+		conf.JWTSecret = v
+	}
+
+	if v := os.Getenv("POSTGRES_URI"); v != "" {
+		conf.Postgres.URI = v
+	}
+
 	return conf
-}
-
-// redis and postgres connection setup
-func SetupConnections(conf *Config) error {
-
-	db, err := NewDbConnection(&conf.Postgres)
-	if err != nil {
-		err := fmt.Errorf("could not connect to database: %v", err)
-		return err
-	}
-
-	redis, err := NewRedisConnection(&conf.Redis)
-
-	if err != nil {
-		err := fmt.Errorf("could not connect to redis: %v", err)
-		return err
-	}
-
-	appConf := &AppConfig{
-		DB:    db,
-		Redis: redis,
-	}
-
-	// config.TestConfig = appConf // a hack for testing
-	App = appConf
-
-	return nil
-
 }

@@ -104,6 +104,7 @@ require (
 	github.com/goccy/go-json v0.10.2
 	github.com/gofiber/fiber/v2 v2.46.0
 	github.com/gofiber/template v1.8.1
+	github.com/joho/godotenv v1.5.1
 	github.com/livekit/server-sdk-go v1.0.11
 	github.com/redis/go-redis v6.15.9+incompatible
 	github.com/redis/go-redis/v9 v9.0.5
