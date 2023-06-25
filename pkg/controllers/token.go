@@ -6,6 +6,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+const (
+	InvalidTokenError = "The Token in the Authorization header is invalid"
+)
+
 func HandleAuthHeaderCheck(c *fiber.Ctx) error {
 	api_key := c.Get("API_KEY", "")
 	hash_signature := c.Get("HASH", "")

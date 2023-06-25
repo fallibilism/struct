@@ -4,10 +4,10 @@ go 1.20
 
 require github.com/urfave/cli/v2 v2.25.5
 
-replace (
-	// When developin, this replace uses the local package instead of a pushed version.
-	v/protocol => ./protocol/go_protocol
-)
+// When developin, this replace uses the local package instead of a pushed version.
+// replace v/protocol => ./protocol/go_protocol
+replace github.com/fallibilism/protocol => ./protocol
+
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -100,6 +100,7 @@ require (
 require (
 	github.com/ansrivas/fiberprometheus/v2 v2.6.0
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
+	github.com/fallibilism/protocol v0.0.0-20230615083542-7f20358d88cb
 	github.com/goccy/go-json v0.10.2
 	github.com/gofiber/fiber/v2 v2.46.0
 	github.com/gofiber/template v1.8.1
@@ -108,6 +109,7 @@ require (
 	github.com/redis/go-redis/v9 v9.0.5
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
+	gopkg.in/square/go-jose.v2 v2.6.0
 	gorm.io/driver/postgres v1.5.2
 	gorm.io/gorm v1.25.1
 )

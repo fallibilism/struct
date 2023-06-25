@@ -77,10 +77,23 @@ func (r *Routes) middleware() {
 func (r *Routes) routes() {
 	app := r.App
 
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.Render("index", nil)
+	})
+
+	app.Get("/info", func(c *fiber.Ctx) error {
+		return c.Render("info", nil)
+	})
+
 	app.Get("/health-check", controllers.HandleHealthCheck)
 	app.Post("/webhook", controllers.HandleWebhook)
 	app.Get("/download/uploadedFile/:sid/*", controllers.HandleDownloadUploadedFile)
 	app.Get("/download/recording/:token", controllers.HandleDownloadRecording)
+
+	//livekit
+	lti_v1 := app.Group("lti/v1/api", controllers.HandleV1HeaderToken)
+	lti_v1.Post("/room/join", controllers.HandleLTIV1JoinRoom)
+	lti_v1.Get("/room/check", controllers.HandleLTIV1CheckRoom)
 
 	// all auth group routes require auth header (API key and secret key)
 	auth := app.Group("/auth", controllers.HandleAuthHeaderCheck)

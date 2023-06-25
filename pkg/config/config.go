@@ -29,6 +29,7 @@ var (
 		ApiKey: "api_key",
 		Secret: "secret",
 	}
+	Conf = &Config{}
 )
 
 var Redis *RedisConfig
@@ -91,6 +92,8 @@ type Config struct {
 	Name         string         `yaml:"name"`
 	Developement bool           `yaml:"developement"`
 	Port         uint           `yaml:"port"`
+	JWTSecret    string         `yaml:"jwt_secret"`
+	JWTIssuer    string         `yaml:"jwt_issuer"`
 	Openai       OpenAIConfig   `yaml:"open_ai"`
 	Logging      string         `yaml:"logging"`
 	Postgres     PostgresConfig `yaml:"postgres"`
@@ -107,5 +110,6 @@ func SetConfig(filename string) (conf *Config) {
 	Openai = &conf.Openai
 	Postgres = &conf.Postgres
 	Redis = &conf.Redis
+	Conf = conf
 	return conf
 }
