@@ -1,3 +1,4 @@
+package config
 import (
 	"gorm.io/gorm"
 	pg "gorm.io/driver/postgres"
