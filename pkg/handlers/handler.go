@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"log"
+	"net"
 	"v/pkg/config"
 	"v/pkg/controllers"
 
@@ -40,8 +41,16 @@ func Handler() *Routes {
 
 func (r *Routes) Listen() error {
 	log.Printf("Server listening on port %s", config.Server.Port)
-	// addr := net.Listen(config.Server.Host, config.Server.Port)
-	return r.App.Listen(":" + config.Server.Port)
+
+	// changed to TCP listener to support Railway deployment
+
+	addr, err := net.Listen("tcp", ":"+config.Server.Port)
+
+	if err != nil {
+		return err
+	}
+
+	return r.App.Listener(addr)
 }
 func (r *Routes) Shutdown() error {
 
