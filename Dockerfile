@@ -13,7 +13,7 @@ RUN go get gorm.io/gorm
 RUN go get gorm.io/driver/postgres
 
 
-RUN go build -o /bin/server ./cmd
+RUN CGO_ENABLED=0 go build -o /bin/server ./cmd
 
 EXPOSE 8080
 
