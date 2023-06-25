@@ -1,14 +1,15 @@
 name: struct
 development: true
 port: 3000
+jwt_secret: qwertyuiopasdfghjklzxcvbnm123456
 log_level: WARN 
 ssl:
   key: /path/to/key
   cert: /path/to/certificate
 
 redis:
-  host: host.docker.internal 
-  # host: localhost
+  # host: host.docker.internal 
+  host: localhost
   username: redis
   password: 1234
   port: 5432
@@ -17,8 +18,8 @@ redis:
 
 
 postgres:
-  host: host.docker.internal
-  # host: localhost
+  # host: host.docker.internal
+  host: localhost
   port: 6379
   password: password
   database: struct

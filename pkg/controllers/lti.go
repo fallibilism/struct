@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"v/pkg/config"
 	"v/pkg/models"
 
@@ -10,16 +11,23 @@ import (
 )
 
 func HandleLTIV1CheckRoom(c *fiber.Ctx) error {
-	roomId := c.Locals("roomId")
+	roomId := c.Locals("room_id")
+
+	if roomId == nil {
+		return fiber.NewError(fiber.StatusBadRequest, "room id is empty")
+	}
 
 	m := models.NewRoomAuthModel(config.App)
-	status, msg := m.IsRoomActive(&protocol.IsRoomActiveRequest{
+	status, err := m.IsRoomActive(&protocol.IsRoomActiveRequest{
 		RoomId: roomId.(string),
 	})
 
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
 	return c.JSON(fiber.Map{
 		"status": status,
-		"msg":    msg,
 	})
 }
 
@@ -28,8 +36,8 @@ func HandleLTIV1JoinRoom(c *fiber.Ctx) error {
 }
 
 func HandleLTIEndRoom(c *fiber.Ctx) error {
-	roomId := c.Locals("roomId")
-	isAdmin := c.Locals("isAdmin").(bool)
+	roomId := c.Locals("room_id")
+	isAdmin := c.Locals("is_admin").(bool)
 
 	if !isAdmin {
 		return c.JSON(fiber.Map{
@@ -52,11 +60,23 @@ func HandleLTIEndRoom(c *fiber.Ctx) error {
 		"msg":    "room ended successfully",
 	})
 }
+func bearerSplit(tok string) (string, error) {
+	if len(tok) > 6 && tok[:6] == "Bearer" {
+		return tok[7:], nil
+	}
+	return "", errors.New("bearer token not found")
+}
 func HandleV1HeaderToken(c *fiber.Ctx) error {
 	authToken := c.Get("Authorization")
 
 	if authToken == "" {
 		return fiber.NewError(fiber.StatusUnauthorized, InvalidTokenError)
+	}
+
+	authToken, err := bearerSplit(authToken)
+
+	if err != nil {
+		return fiber.NewError(fiber.StatusUnauthorized, InvalidTokenError+": "+err.Error())
 	}
 
 	m := models.NewLTIV1Model(config.App)

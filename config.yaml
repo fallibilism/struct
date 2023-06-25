@@ -1,6 +1,7 @@
 name: struct
 development: true
 port: 3000
+jwt_secret: qwertyuiopasdfghjklzxcvbnm123456
 log_level: WARN 
 ssl:
   key: /path/to/key

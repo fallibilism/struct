@@ -7,8 +7,8 @@ services:
       POSTGRES_USER: struct 
       POSTGRES_PASSWORD: password 
       POSTGRES_DB: struct
-    volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+    # volumes:
+    #   - ./data/postgres:/var/lib/postgresql/data
     ports:
       - 5432:5432
     # networks:

@@ -4,7 +4,7 @@ tmp_dir = "."
 
 [build]
   args_bin = []
-  bin = "./bin/main"
+  bin = "./bin/main --config ./config.dev.yaml"
   cmd = "make build"
   delay = 1000
   exclude_regex = ["_test.go"]

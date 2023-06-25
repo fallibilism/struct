@@ -91,7 +91,7 @@ func (r *Routes) routes() {
 	app.Get("/download/recording/:token", controllers.HandleDownloadRecording)
 
 	//livekit
-	lti_v1 := app.Group("lti/v1/api", controllers.HandleV1HeaderToken)
+	lti_v1 := app.Group("/lti/v1", controllers.HandleV1HeaderToken)
 	lti_v1.Post("/room/join", controllers.HandleLTIV1JoinRoom)
 	lti_v1.Get("/room/check", controllers.HandleLTIV1CheckRoom)
 

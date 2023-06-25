@@ -46,6 +46,7 @@ func NewRoomModel(conf *config.AppConfig) *RoomModel {
 
 // Get info about the room from db
 func (rm *RoomModel) GetRoom(roomId string) (*Room, error) {
+	println("roomid: ", roomId)
 	uid, err := uuid.Parse(roomId)
 
 	if err != nil {
