@@ -9,6 +9,8 @@ COPY . .
 
 # download if above files changed
 RUN go mod download
+RUN go get gorm.io/gorm
+RUN go get gorm.io/driver/postgres
 
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=$TARGETARCH GO111MODULE=on go build -ldflags '-w -s -buildid=' -a -o /bin/server ./cmd
