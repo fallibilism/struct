@@ -1,0 +1,25 @@
+syntax="proto3";
+package protocol;
+
+
+option go_package = "github.com/fallibilism/protocol/go_protocol";
+
+//import "livekit_models.proto"
+
+enum DataMessageType {
+	BOT = 0;
+	USER = 1;
+}
+
+message DataMessageBody {
+
+}
+
+message DataMessage {
+	DataMessageType type = 1;
+	optional string message_id = 2;
+	string room_id = 3;
+	string room_sid =  4;
+	string to = 5;
+	DataMessageBody body = 6;
+}
