@@ -32,6 +32,10 @@ var (
 	errorRoomExists   = errors.New("room already exists")
 )
 
+const (
+	errorRoomNotActive = "room is not active"
+)
+
 func NewRoomService(conf *config.AppConfig) *RoomService {
 	livekitClient := lksdk.NewRoomServiceClient(config.Livekit.Host, config.Livekit.ApiKey, config.Livekit.Secret)
 	return &RoomService{

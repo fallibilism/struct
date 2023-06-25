@@ -1,13 +1,9 @@
 package models
 
 import (
-	"context"
-	"log"
+	"errors"
 	"time"
 	"v/pkg/config"
-
-	"github.com/livekit/protocol/livekit"
-	livekitClient "github.com/livekit/server-sdk-go"
 
 	protocol "github.com/fallibilism/protocol/go_protocol"
 )
@@ -34,33 +30,24 @@ func (m *RoomAuthModel) IsRoomActive(req *protocol.IsRoomActiveRequest) (bool, e
 	if r.ID < 1 {
 		return false, errorRoomNotFound
 	}
-	room, err := m.LoadRoom(req.RoomId)
-	if err != nil {
-		return false, err
+	room, err := m.rs.LoadRoom(req.RoomId)
+
+	if err != nil || room == nil {
+		// room isn't active. Change status
+		err = m.rm.UpdateRoom(&Room{
+			RoomId:   r.RoomId,
+			IsActive: false,
+			Ended:    time.Now().Format("2006-01-02 15:04:05"),
+		})
+
+		if err != nil {
+			return false, err
+		}
+
+		return false, errors.New(errorRoomNotActive)
 	}
 
-	return room.State == livekit.ParticipantInfo_JOINED, nil
-}
-
-// load all livekit rooms given a room id
-func (m *RoomAuthModel) LoadRoom(roomId string) (*livekit.Room, error) {
-	req := livekit.ListRoomsRequest{
-		Names: []string{
-			roomId,
-		},
-	}
-
-	rooms, err := livekitClient.ListRooms(context.Background(), &req)
-	if err != nil {
-		log.Printf("Error loading room: %v", err)
-		return nil, err
-	}
-
-	if len(rooms.Rooms) == 0 {
-		return nil, errorRoomNotFound
-	}
-
-	return rooms.Rooms[0], nil
+	return true, nil
 }
 
 // end a livekit room given a room id
@@ -83,7 +70,7 @@ func (m *RoomAuthModel) EndRoom(req *protocol.EndRoomRequest) error {
 		return err
 	}
 
-	m.rm.UpdateRoom(&Room{
+	return m.rm.UpdateRoom(&Room{
 		RoomId:   room.RoomId,
 		IsActive: false,
 		Ended:    time.Now().Format("2008-06-03 15:04:05"),

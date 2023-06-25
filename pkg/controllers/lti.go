@@ -39,13 +39,17 @@ func HandleLTIEndRoom(c *fiber.Ctx) error {
 	}
 
 	m := models.NewRoomAuthModel(config.App)
-	status, msg := m.EndRoom(&protocol.EndRoomRequest{
+	err := m.EndRoom(&protocol.EndRoomRequest{
 		RoomId: roomId.(string),
 	})
 
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
 	return c.JSON(fiber.Map{
-		"status": status,
-		"msg":    msg,
+		"status": fiber.StatusOK,
+		"msg":    "room ended successfully",
 	})
 }
 func HandleV1HeaderToken(c *fiber.Ctx) error {
@@ -55,7 +59,7 @@ func HandleV1HeaderToken(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusUnauthorized, InvalidTokenError)
 	}
 
-	m := models.NewLTIV1Model()
+	m := models.NewLTIV1Model(config.App)
 	claims, err := m.LTIVerifyHeaderToken(authToken)
 
 	if err != nil {
