@@ -24,7 +24,7 @@ var (
 	}
 	Server = ServerConfig{
 		Port: "8080",
-		Host: "localhost",
+		Host: "0.0.0.0",
 	}
 	TestConfig = &AppConfig{} //hack to get Config in test
 	App        = &AppConfig{}
