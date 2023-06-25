@@ -1,23 +1,39 @@
 package config
+
 import (
+	"fmt"
+
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	pg "gorm.io/driver/postgres"
 )
 
 const DBConnectionError = "failed to connect to db"
+
 func NewDbConnection(c *PostgresConfig) (*gorm.DB, error) {
-	dsn := fmt.Sprintf("user=%s password=%s dbname=%s port=%d sslmode=%s", c.User, c.Password, c.DBName, c.Port, c.SslMode)
-	db, err := gorm.Open(postgres.New(postgres.Config{
-		// DSN: "user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Shanghai",
-		DSN: dsn,
-		PreferSimpleProtocol: true, // disables implicit prepared statement usage
-	  }), &gorm.Config{})
-	if err != nil {
-		return nil, DBConnectionError
+	var DSN string
+	if !Conf.Postgres.External {
+		DSN = fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=%s", c.Username, c.Password, c.Host, c.Port, c.DBName, c.SslMode)
+	} else {
+		DSN = Conf.Postgres.URI
 	}
 
-	// migrations
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		DSN:              DSN,
+		WithoutReturning: true,
+	}))
+
+	// DSN: "postgresql://doadmin:AVNS_-OK3KDjBah18nx3cALr@db-postgresql-fra1-42722-do-user-9369539-0.b.db.ondigitalocean.com:25060/defaultdb?sslmode=require",
+	// DriverName: "cloudsqlpostgres",
+	// Conn:       sqlDb,
+	// PreferSimpleProtocol: true, // disables implicit prepared statement usage
+	// defer db.Close()
+
+	if err != nil {
+		return nil, fmt.Errorf("%s: %v", DBConnectionError, err)
+	}
 
 	// ping
+	db.Exec("SELECT 1")
+	fmt.Println("Connected to database successfully")
 	return db, nil
 }

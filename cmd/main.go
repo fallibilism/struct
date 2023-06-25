@@ -6,9 +6,12 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"v/pkg/config"
 	"v/pkg/handlers"
+	"v/pkg/models"
 
 	"github.com/urfave/cli/v2"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -17,9 +20,9 @@ func main() {
 	}
 
 	app := &cli.App{
-		Name:        "plugnmeet-server",
-		Usage:       "Scalable, Open source web conference system",
-		Description: "without option will start server",
+		Name:        "struct",
+		Usage:       "video conference system",
+		Description: "xxx",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "config",
@@ -40,7 +43,16 @@ func main() {
 
 func runServer(c *cli.Context) error {
 
+	conf := config.SetConfig(c.String("config"))
+
 	router := handlers.Handler()
+
+	err := setupConnections(conf)
+	// println("ignore setup connection for now")
+
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
@@ -51,4 +63,40 @@ func runServer(c *cli.Context) error {
 		_ = router.Shutdown()
 	}()
 	return router.Listen()
+}
+
+// redis and postgres connection setup
+func setupConnections(conf *config.Config) error {
+
+	db, err := config.NewDbConnection(&conf.Postgres)
+	if err != nil {
+		err := fmt.Errorf("could not connect to database: %v", err)
+		return err
+	}
+
+	migrations(db)
+	// redis, err := NewRedisConnection(&conf.Redis)
+
+	// if err != nil {
+	// 	err := fmt.Errorf("could not connect to redis: %v", err)
+	// 	return err
+	// }
+
+	appConf := &config.AppConfig{
+		DB: db,
+		// Redis: redis,
+	}
+
+	// config.TestConfig = appConf // a hack for testing
+	config.App = appConf
+
+	return nil
+
+}
+
+// model migration here
+func migrations(db *gorm.DB) {
+
+	db.AutoMigrate(&models.Room{})
+
 }

@@ -43,7 +43,15 @@ func (r *Routes) Listen() error {
 	return r.App.Listen(config.Server.Host + ":" + config.Server.Port)
 }
 func (r *Routes) Shutdown() error {
-	log.Panicf("[%s] Not implemented", "Shutdown")
+
+	log.Printf("Gracefully shutting down server...")
+
+	// close database connection
+	// close redis connection
+	r.App.Shutdown()
+
+	log.Printf("Server shutdown successful")
+
 	return nil
 }
 
@@ -69,10 +77,23 @@ func (r *Routes) middleware() {
 func (r *Routes) routes() {
 	app := r.App
 
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.Render("index", nil)
+	})
+
+	app.Get("/info", func(c *fiber.Ctx) error {
+		return c.Render("info", nil)
+	})
+
 	app.Get("/health-check", controllers.HandleHealthCheck)
 	app.Post("/webhook", controllers.HandleWebhook)
 	app.Get("/download/uploadedFile/:sid/*", controllers.HandleDownloadUploadedFile)
 	app.Get("/download/recording/:token", controllers.HandleDownloadRecording)
+
+	//livekit
+	lti_v1 := app.Group("/lti/v1", controllers.HandleV1HeaderToken)
+	lti_v1.Post("/room/join", controllers.HandleLTIV1JoinRoom)
+	lti_v1.Get("/room/check", controllers.HandleLTIV1CheckRoom)
 
 	// all auth group routes require auth header (API key and secret key)
 	auth := app.Group("/auth", controllers.HandleAuthHeaderCheck)

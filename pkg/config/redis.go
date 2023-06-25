@@ -3,10 +3,11 @@ package config
 import (
 	"context"
 	"crypto/tls"
+
 	"github.com/redis/go-redis/v9"
 )
 
-func NewRedisConn(c *RedisConfig) (*redis.Client, error) {
+func NewRedisConnection(c *RedisConfig) (*redis.Client, error) {
 
 	var rdb *redis.Client
 	var tlsConfig *tls.Config
@@ -18,7 +19,7 @@ func NewRedisConn(c *RedisConfig) (*redis.Client, error) {
 	}
 
 	rdb = redis.NewClient(&redis.Options{
-		Addr:      c.Host,
+		Addr:      c.Host + ":" + string(c.Port),
 		Username:  c.Username,
 		Password:  c.Password,
 		DB:        c.DBName,
@@ -30,6 +31,6 @@ func NewRedisConn(c *RedisConfig) (*redis.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return rdb, nil
 }

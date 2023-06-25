@@ -1,22 +1,30 @@
 package utils
 
 import (
-	"github.com/fallibilism/pkg/config"
+	"fmt"
+	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
-func readYaml(filename string) error {
-	var appConfig config.AppConfig
-	yamlFile, err := os.ReadFile(filename)
+// Read Yaml with generic interface
+func ReadFile[T comparable](filename string, conf *T) (*T, error) {
+	content, err := os.ReadFile(filename)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = yaml.Unmarshal(yamlFile, &appConfig)
+	if len(content) <= 0 {
+		if err := yaml.Unmarshal([]byte(content), conf); err != nil {
+			return nil, fmt.Errorf("could not parse file into %v: %v", *conf, err)
+		}
+	}
+
+	err = yaml.Unmarshal(content, &conf)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	config.SetAppConfig(&appConfig)
 
-	return nil
+	return conf, nil
 }

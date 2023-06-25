@@ -1,4 +1,54 @@
 version: "3"
 services:
-  livekit:
-  # implemet livekit server 
+  postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: struct 
+      POSTGRES_PASSWORD: password 
+      POSTGRES_DB: struct
+    # volumes:
+    #   - ./data/postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    # networks:
+    #   - bridge
+  redis:
+    image: redis:latest
+    restart: always
+    volumes:
+      - ./data/redis:/data
+    ports:
+      - 6379:6379
+    # networks:
+    #   - bridge
+#   struct:
+#     build: .
+#     restart: always
+#     environment:
+#       POSTGRES_USER: struct 
+#       POSTGRES_PASSWORD: password 
+#       POSTGRES_DB: struct
+#       REDIS_HOST: redis
+#       REDIS_PORT: 6379
+#       REDIS_PASSWORD: ""
+#       REDIS_DB: 0
+#       REDIS_POOL_SIZE: 10
+#       REDIS_POOL_TIMEOUT: 10
+#       REDIS_POOL_IDLE_TIMEOUT: 10
+  
+#     ports:
+#       - 8080:8080
+#     networks:
+#       - bridge
+#   # livekit:
+#   # implemet livekit server 
+
+# networks:
+#   # default:
+#   #   external:
+#   #     name: struct
+#   bridge:
+#     driver: bridge
+
+  
