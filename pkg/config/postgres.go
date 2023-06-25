@@ -18,7 +18,8 @@ func NewDbConnection(c *PostgresConfig) (*gorm.DB, error) {
 	}
 
 	db, err := gorm.Open(postgres.New(postgres.Config{
-		DSN: DSN,
+		DSN:              DSN,
+		WithoutReturning: true,
 	}))
 
 	// DSN: "postgresql://doadmin:AVNS_-OK3KDjBah18nx3cALr@db-postgresql-fra1-42722-do-user-9369539-0.b.db.ondigitalocean.com:25060/defaultdb?sslmode=require",
@@ -30,8 +31,6 @@ func NewDbConnection(c *PostgresConfig) (*gorm.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s: %v", DBConnectionError, err)
 	}
-
-	// migrations
 
 	// ping
 	db.Exec("SELECT 1")
