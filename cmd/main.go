@@ -41,15 +41,16 @@ func main() {
 
 func runServer(c *cli.Context) error {
 
-	conf := config.SetConfig(c.String("config"))
+	_ = config.SetConfig(c.String("config"))
 
 	router := handlers.Handler()
 
-	err := config.SetupConnections(conf)
+	// err := config.SetupConnections(conf)
+	println("ignore setup connection for now")
 
-	if err != nil {
-		log.Fatalln(err)
-	}
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
