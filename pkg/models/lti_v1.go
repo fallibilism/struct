@@ -10,7 +10,7 @@ import (
 
 type LtiV1 struct {
 	authModel      *RoomAuthModel
-	authTokenModel *AuthTokenModel
+	authTokenModel *TokenModel
 }
 
 type LtiClaims struct {
@@ -42,10 +42,10 @@ type LtiCustomDesign struct {
 	CustomLogo      string `json:"custom_logo,omitempty"`
 }
 
-func NewLTIV1Model() *LtiV1 {
+func NewLTIV1Model(conf *config.AppConfig) *LtiV1 {
 	return &LtiV1{
-		authModel:      NewRoomAuthModel(),
-		authTokenModel: NewAuthTokenModel(),
+		authModel:      NewRoomAuthModel(conf),
+		authTokenModel: NewTokenModel(conf),
 	}
 }
 

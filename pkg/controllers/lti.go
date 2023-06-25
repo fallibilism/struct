@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"v/pkg/config"
 	"v/pkg/models"
 
 	protocol "github.com/fallibilism/protocol/go_protocol"
@@ -11,7 +12,7 @@ import (
 func HandleLTIV1CheckRoom(c *fiber.Ctx) error {
 	roomId := c.Locals("roomId")
 
-	m := models.NewRoomAuthModel()
+	m := models.NewRoomAuthModel(config.App)
 	status, msg := m.IsRoomActive(&protocol.IsRoomActiveRequest{
 		RoomId: roomId.(string),
 	})
@@ -37,7 +38,7 @@ func HandleLTIEndRoom(c *fiber.Ctx) error {
 		})
 	}
 
-	m := models.NewRoomAuthModel()
+	m := models.NewRoomAuthModel(config.App)
 	status, msg := m.EndRoom(&protocol.EndRoomRequest{
 		RoomId: roomId.(string),
 	})

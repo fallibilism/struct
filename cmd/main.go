@@ -45,22 +45,10 @@ func runServer(c *cli.Context) error {
 
 	router := handlers.Handler()
 
-	db, err := config.NewDbConnection(&conf.Postgres)
-	if err != nil {
-		log.Panicln("could not connect to database", "error", err)
-	}
-
-	redis, err := config.NewRedisConnection(config.Redis)
-
-	appConf := &config.AppConfig{
-		DB:    db,
-		Redis: redis,
-	}
-
-	config.TestConfig = appConf // a hack for testing
+	err := config.SetupConnections(conf)
 
 	if err != nil {
-		log.Panicln("could not connect to redis", "error", err)
+		log.Fatalln(err)
 	}
 
 	sigChan := make(chan os.Signal, 1)

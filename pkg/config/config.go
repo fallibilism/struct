@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"v/pkg/utils"
 
 	"github.com/redis/go-redis/v9"
@@ -24,6 +25,7 @@ var (
 		Host: "localhost",
 	}
 	TestConfig = &AppConfig{} //hack to get Config in test
+	App        = &AppConfig{}
 	Livekit    = LivekitConfig{
 		Host:   "http://localhost:7880",
 		ApiKey: "api_key",
@@ -112,4 +114,32 @@ func SetConfig(filename string) (conf *Config) {
 	Redis = &conf.Redis
 	Conf = conf
 	return conf
+}
+
+// redis and postgres connection setup
+func SetupConnections(conf *Config) error {
+
+	db, err := NewDbConnection(&conf.Postgres)
+	if err != nil {
+		err := fmt.Errorf("could not connect to database: %v", err)
+		return err
+	}
+
+	redis, err := NewRedisConnection(&conf.Redis)
+
+	if err != nil {
+		err := fmt.Errorf("could not connect to redis: %v", err)
+		return err
+	}
+
+	appConf := &AppConfig{
+		DB:    db,
+		Redis: redis,
+	}
+
+	// config.TestConfig = appConf // a hack for testing
+	App = appConf
+
+	return nil
+
 }

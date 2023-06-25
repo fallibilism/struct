@@ -13,6 +13,12 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+/**
+* This file is part of the v project.
+* it is responsible for the room services in **livekit**.
+* referenced from [github.com/livekit-examples](github.com/livekit-examples)
+*
+ */
 type RoomService struct {
 	app           *config.AppConfig
 	pg            *gorm.DB
