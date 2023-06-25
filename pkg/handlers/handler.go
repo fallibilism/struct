@@ -40,6 +40,7 @@ func Handler() *Routes {
 
 func (r *Routes) Listen() error {
 	log.Printf("Server listening on port %s", config.Server.Port)
+	// addr := net.Listen(config.Server.Host, config.Server.Port)
 	return r.App.Listen(":" + config.Server.Port)
 }
 func (r *Routes) Shutdown() error {
