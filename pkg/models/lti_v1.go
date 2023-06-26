@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"net/url"
 	"time"
 
@@ -78,8 +79,20 @@ func (l *LtiV1) LTIVerifyHeaderToken(token string) (*LtiClaims, error) {
 }
 
 // this verifies the LTI 1.1 authentication request
-func (l *LtiV1) LTIVerifyAuth(body map[string]string, url string) (*url.Values, error) {
+func (l *LtiV1) LTIVerifyAuth(body map[string]string, url string, req *http.Request) (*url.Values, error) {
+
 	p := lti.NewProvider(config.Conf.JWTSecret, url)
+
+	ok, err := p.IsValid(req)
+
+	if err != nil {
+		return nil, fmt.Errorf(AuthError+": Invalid requst - %s", err.Error())
+	}
+
+	if !ok {
+		return nil, fmt.Errorf(AuthError + ": Invalid requst")
+	}
+
 	p.Method = "POST"
 	p.ConsumerKey = config.Conf.ConsumerKey
 
