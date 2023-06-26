@@ -28,14 +28,15 @@ generate_ts:
 	 
 generate: generate_go generate_ts
 
-install:  manual_install
-	sudo apt install -y protobuf-compiler 
-	protoc --version
-	sudo apt-get -y install protoc-gen-go
+install:  manual_install ts_install
+	# sudo apt install -y protobuf-compiler 
+	# protoc --version
+	# sudo apt-get -y install protoc-gen-go
 
 ts_install: 
 	pnpm setup
 	pnpm install -g protoc-gen-ts
+	pnpm i -g protoc-gen-validate
 
 manual_install: 
 	curl -LO ${PB_REL}/download/v3.15.8/protoc-3.15.8-linux-x86_64.zip
