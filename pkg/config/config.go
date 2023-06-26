@@ -3,7 +3,6 @@ package config
 import (
 	"os"
 	"strconv"
-	"v/pkg/utils"
 
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
@@ -113,7 +112,7 @@ func SetConfig(filename string) (conf *Config) {
 	if err := godotenv.Load(); err != nil {
 		panic("config: " + err.Error())
 	}
-	conf, err := utils.ReadFile(filename, &Config{})
+	conf, err := readFile(filename, &Config{})
 	if err != nil {
 		panic("config: " + err.Error())
 	}

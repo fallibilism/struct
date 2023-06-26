@@ -4,7 +4,7 @@
  * source: data_message.proto
  * git: https://github.com/thesayyn/protoc-gen-ts */
 import * as pb_1 from "google-protobuf";
-export namespace go_protocol {
+export namespace protocol {
     export enum DataMessageType {
         BOT = 0,
         USER = 1

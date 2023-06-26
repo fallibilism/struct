@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 	"v/pkg/config"
 	"v/pkg/models"
 	"v/pkg/utils"
@@ -13,8 +12,6 @@ import (
 	protocol "github.com/fallibilism/protocol/go_protocol"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/adaptor"
-	"gopkg.in/square/go-jose.v2"
-	"gopkg.in/square/go-jose.v2/jwt"
 )
 
 func HandleLTIV1CheckRoom(c *fiber.Ctx) error {

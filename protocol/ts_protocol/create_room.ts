@@ -5,7 +5,7 @@
  * git: https://github.com/thesayyn/protoc-gen-ts */
 import * as dependency_1 from "./livekit_models";
 import * as pb_1 from "google-protobuf";
-export namespace go_protocol {
+export namespace protocol {
     export class CreateRoomRequest extends pb_1.Message {
         #one_of_decls: number[][] = [[3]];
         constructor(data?: any[] | ({

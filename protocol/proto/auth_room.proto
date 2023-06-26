@@ -6,6 +6,7 @@ option go_package = "github.com/fallibilism/protocol/go_protocol";
 
 import "livekit_models.proto";
 
+
 message ActiveRoomInfo {
 	string room_title = 1;
 	string room_id = 2;
@@ -20,6 +21,7 @@ message ActiveRoomInfo {
 message ActiveRoomWithParticipants {
 
 }
+
 
 message ActiveRoomInfoRequest {
 	string room_id = 1;
