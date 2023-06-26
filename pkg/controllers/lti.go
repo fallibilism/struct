@@ -3,6 +3,8 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"strings"
 	"v/pkg/config"
 	"v/pkg/models"
 
@@ -101,4 +103,46 @@ func HandleV1HeaderToken(c *fiber.Ctx) error {
 	}
 
 	return c.Next()
+}
+
+func HandleLTIAuth(c *fiber.Ctx) error {
+	params := c.AllParams()
+
+	if params == nil || len(params) < 1 {
+		return fiber.NewError(fiber.StatusBadRequest, "params is empty")
+	}
+
+	// url
+	host := "http"
+	if c.Secure() {
+		host += "s"
+	}
+
+	if !isLocalhost(c.Hostname()) {
+		return fiber.NewError(fiber.StatusBadRequest, "invalid host. Only secured host is allowed")
+	}
+
+	url := fmt.Sprintf("%s://%s%s", host, c.Hostname(), c.Path())
+	m := models.NewLTIV1Model(config.App)
+	ltis, err := m.LTIVerifyAuth(params, url)
+	if err != nil {
+		return err
+	}
+
+	roomId := fmt.Sprintf("%s_%s_%s", ltis.Get("tool_consumer_instance_guid"), ltis.Get("context_id"), ltis.Get("resource_link_id"))
+	userId := ltis.Get("user_id")
+	if userId == "" {
+		userId = m.genHash(ltis.Get("lis_person_contact_email_primary"))
+	}
+
+	if userId == "" {
+		return errors.New("either value of user_id or lis_person_contact_email_primary  required")
+	}
+	// claims := protocol.LtiAuthClaims{}
+
+	return nil
+}
+
+func isLocalhost(host string) bool {
+	return strings.HasPrefix(host, "localhost") || strings.HasPrefix(host, "127.0.0.1") || strings.HasPrefix(host, "0.0.0.0")
 }

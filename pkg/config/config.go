@@ -99,8 +99,9 @@ type Config struct {
 	Name         string         `yaml:"name"`
 	Developement bool           `yaml:"developement"`
 	Port         uint           `yaml:"port"`
-	JWTSecret    string         `yaml:"jwt_secret"`
+	JWTSecret    string         `yaml:"jwt_secret"` // LTI and JWT secret
 	JWTIssuer    string         `yaml:"jwt_issuer"`
+	ConsumerKey  string         `yaml:"consumer_key"`
 	Openai       OpenAIConfig   `yaml:"open_ai"`
 	Logging      string         `yaml:"logging"`
 	Postgres     PostgresConfig `yaml:"postgres"`

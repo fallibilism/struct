@@ -105,6 +105,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.46.0
 	github.com/gofiber/template v1.8.1
 	github.com/joho/godotenv v1.5.1
+	github.com/jordic/lti v0.0.0-20160211051708-2c756eacbab9
 	github.com/livekit/server-sdk-go v1.0.11
 	github.com/redis/go-redis v6.15.9+incompatible
 	github.com/redis/go-redis/v9 v9.0.5
