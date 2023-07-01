@@ -5,7 +5,7 @@
  * git: https://github.com/thesayyn/protoc-gen-ts */
 import * as dependency_1 from "./livekit_models";
 import * as pb_1 from "google-protobuf";
-export namespace go_protocol {
+export namespace protocol {
     export class ActiveRoomInfo extends pb_1.Message {
         #one_of_decls: number[][] = [];
         constructor(data?: any[] | {
@@ -492,23 +492,47 @@ export namespace go_protocol {
     }
     export class IsRoomActiveRequest extends pb_1.Message {
         #one_of_decls: number[][] = [];
-        constructor(data?: any[] | {}) {
+        constructor(data?: any[] | {
+            room_id?: string;
+        }) {
             super();
             pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-            if (!Array.isArray(data) && typeof data == "object") { }
+            if (!Array.isArray(data) && typeof data == "object") {
+                if ("room_id" in data && data.room_id != undefined) {
+                    this.room_id = data.room_id;
+                }
+            }
         }
-        static fromObject(data: {}): IsRoomActiveRequest {
+        get room_id() {
+            return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+        }
+        set room_id(value: string) {
+            pb_1.Message.setField(this, 1, value);
+        }
+        static fromObject(data: {
+            room_id?: string;
+        }): IsRoomActiveRequest {
             const message = new IsRoomActiveRequest({});
+            if (data.room_id != null) {
+                message.room_id = data.room_id;
+            }
             return message;
         }
         toObject() {
-            const data: {} = {};
+            const data: {
+                room_id?: string;
+            } = {};
+            if (this.room_id != null) {
+                data.room_id = this.room_id;
+            }
             return data;
         }
         serialize(): Uint8Array;
         serialize(w: pb_1.BinaryWriter): void;
         serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
             const writer = w || new pb_1.BinaryWriter();
+            if (this.room_id.length)
+                writer.writeString(1, this.room_id);
             if (!w)
                 return writer.getResultBuffer();
         }
@@ -518,6 +542,9 @@ export namespace go_protocol {
                 if (reader.isEndGroup())
                     break;
                 switch (reader.getFieldNumber()) {
+                    case 1:
+                        message.room_id = reader.readString();
+                        break;
                     default: reader.skipField();
                 }
             }
@@ -568,6 +595,73 @@ export namespace go_protocol {
         }
         static deserializeBinary(bytes: Uint8Array): IsRoomActiveResponse {
             return IsRoomActiveResponse.deserialize(bytes);
+        }
+    }
+    export class EndRoomRequest extends pb_1.Message {
+        #one_of_decls: number[][] = [];
+        constructor(data?: any[] | {
+            room_id?: string;
+        }) {
+            super();
+            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
+            if (!Array.isArray(data) && typeof data == "object") {
+                if ("room_id" in data && data.room_id != undefined) {
+                    this.room_id = data.room_id;
+                }
+            }
+        }
+        get room_id() {
+            return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+        }
+        set room_id(value: string) {
+            pb_1.Message.setField(this, 1, value);
+        }
+        static fromObject(data: {
+            room_id?: string;
+        }): EndRoomRequest {
+            const message = new EndRoomRequest({});
+            if (data.room_id != null) {
+                message.room_id = data.room_id;
+            }
+            return message;
+        }
+        toObject() {
+            const data: {
+                room_id?: string;
+            } = {};
+            if (this.room_id != null) {
+                data.room_id = this.room_id;
+            }
+            return data;
+        }
+        serialize(): Uint8Array;
+        serialize(w: pb_1.BinaryWriter): void;
+        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+            const writer = w || new pb_1.BinaryWriter();
+            if (this.room_id.length)
+                writer.writeString(1, this.room_id);
+            if (!w)
+                return writer.getResultBuffer();
+        }
+        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): EndRoomRequest {
+            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new EndRoomRequest();
+            while (reader.nextField()) {
+                if (reader.isEndGroup())
+                    break;
+                switch (reader.getFieldNumber()) {
+                    case 1:
+                        message.room_id = reader.readString();
+                        break;
+                    default: reader.skipField();
+                }
+            }
+            return message;
+        }
+        serializeBinary(): Uint8Array {
+            return this.serialize();
+        }
+        static deserializeBinary(bytes: Uint8Array): EndRoomRequest {
+            return EndRoomRequest.deserialize(bytes);
         }
     }
 }

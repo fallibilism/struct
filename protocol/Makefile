@@ -8,7 +8,7 @@ PROTOC_GEN_VERSION=@v1.0.1
 PB_REL="https://github.com/protocolbuffers/protobuf/releases"
 
 echo:
-	@echo ${GO_PROTOCOL}
+	@echo ${PWD}/${TS_PROTOCOL}
 generate_go: 
 	@protoc \
 	-I ${GOPATH}/pkg/mod \
@@ -24,18 +24,19 @@ generate_ts:
 	-I ${GOPATH}/pkg/mod/github.com/livekit/protocol${LIVEKIT_VERSION} \
 	--proto_path=${PROTO_PATH} \
 	${PROTO_PATH}/*.proto \
-	--ts_out=paths=source_relative:${TS_PROTOCOL} \
+	--ts_out=paths=source_relative:${PWD}/${TS_PROTOCOL} \
 	 
 generate: generate_go generate_ts
 
-install:  manual_install
-	sudo apt install -y protobuf-compiler 
-	protoc --version
-	sudo apt-get -y install protoc-gen-go
+install:  manual_install ts_install
+	# sudo apt install -y protobuf-compiler 
+	# protoc --version
+	# sudo apt-get -y install protoc-gen-go
 
 ts_install: 
 	pnpm setup
 	pnpm install -g protoc-gen-ts
+	pnpm i -g protoc-gen-validate
 
 manual_install: 
 	curl -LO ${PB_REL}/download/v3.15.8/protoc-3.15.8-linux-x86_64.zip
@@ -51,3 +52,9 @@ version:
 	protoc --version
 	protoc-gen-validate --version
 	protoc-gen-go --version
+
+clear:
+	rm -rf ${GO_PROTOCOL}/*
+	rm -rf ${TS_PROTOCOL}/*
+	mkdir -p ${GO_PROTOCOL}
+	mkdir -p ${TS_PROTOCOL}

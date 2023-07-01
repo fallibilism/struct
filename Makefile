@@ -15,5 +15,8 @@ down:
 
 restart: down up
 
+proto:
+	cd ./protocol && make generate_go
+
 test:
 	go test -v ./...

@@ -1,11 +1,21 @@
 package models
 
 import (
+	"errors"
+	"fmt"
+	"log"
+	"net/http"
+	"net/url"
 	"time"
 
 	"v/pkg/config"
 
+	"github.com/jordic/lti"
 	"gopkg.in/square/go-jose.v2/jwt"
+)
+
+const (
+	AuthError = "error authenticating user"
 )
 
 type LtiV1 struct {
@@ -67,3 +77,69 @@ func (l *LtiV1) LTIVerifyHeaderToken(token string) (*LtiClaims, error) {
 	return claims, nil
 
 }
+
+// this verifies the LTI 1.1 authentication request
+func (l *LtiV1) LTIVerifyAuth(body map[string]string, url string, req *http.Request) (*url.Values, error) {
+
+	p := lti.NewProvider(config.Conf.JWTSecret, url)
+
+	ok, err := p.IsValid(req)
+
+	if err != nil {
+		return nil, fmt.Errorf(AuthError+": Invalid requst - %s", err.Error())
+	}
+
+	if !ok {
+		return nil, fmt.Errorf(AuthError + ": Invalid requst")
+	}
+
+	p.Method = "POST"
+	p.ConsumerKey = config.Conf.ConsumerKey
+
+	// mapParams, providedSignature := split(body)
+
+	//---
+	providedSignature := body["oauth_signature"]
+	delete(body, "oauth_signature")
+	//---
+
+	for k, v := range body {
+		p.Add(k, v)
+	}
+
+	if p.Get("oauth_consumer_key") != p.ConsumerKey {
+		return nil, fmt.Errorf("%s : invalid consumer_key", AuthError)
+	}
+
+	sign, err := p.Sign()
+	if err != nil {
+		return nil, fmt.Errorf(" %s : %s", AuthError, err.Error())
+	}
+
+	params := p.Params()
+	if sign != providedSignature {
+		err := fmt.Errorf("Expected: " + sign + "but provided: " + providedSignature)
+		log.Println(err)
+		return nil, errors.New(AuthError + ": verification failed")
+	}
+
+	return &params, nil
+}
+
+// uncomment when post request is fixed
+// // splits params to maps
+// func split(par string) (m map[string]string, providedSig string) {
+// 	req := strings.Split(par, "&")
+// 	m = make(map[string]string)
+
+// 	for _, v := range req {
+// 		s := strings.Split(v, "=")
+// 		b, _ := url.QueryUnescape(s[1])
+// 		m[s[0]] = s[1]
+// 		if s[0] == "oauth_signature" {
+// 			providedSig = b
+// 		}
+// 	}
+
+// 	return m, providedSig
+// }

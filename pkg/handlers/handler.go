@@ -91,6 +91,10 @@ func (r *Routes) routes() {
 		return c.Render("index", nil)
 	})
 
+	app.Get("/login*", func(c *fiber.Ctx) error {
+		return c.Render("login", nil)
+	})
+
 	app.Get("/info", func(c *fiber.Ctx) error {
 		return c.Render("info", nil)
 	})
@@ -101,7 +105,8 @@ func (r *Routes) routes() {
 	app.Get("/download/recording/:token", controllers.HandleDownloadRecording)
 
 	//livekit
-	lti_v1 := app.Group("/lti/v1", controllers.HandleV1HeaderToken)
+	lti_v1 := app.Group("/lti", controllers.HandleV1HeaderToken)
+	lti_v1.Get("/", controllers.HandleLTIAuth)
 	lti_v1.Post("/room/join", controllers.HandleLTIV1JoinRoom)
 	lti_v1.Get("/room/check", controllers.HandleLTIV1CheckRoom)
 
@@ -126,4 +131,19 @@ func (r *Routes) routes() {
 	api.Post("/verify", controllers.HandleVerifyToken)
 	api.Post("/renew", controllers.HandleRenewToken)
 	api.Post("/revoke", controllers.HandleRevokeToken)
+
+	// redirect unknown pages to 404 page
+
+	app.Get("*", func(c *fiber.Ctx) error {
+		return c.Render("404", nil)
+
+	})
+
+	app.Post("*", func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"error": "404",
+			"msg":   "Page not found",
+		})
+	})
+
 }

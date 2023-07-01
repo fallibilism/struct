@@ -3,11 +3,15 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"strings"
 	"v/pkg/config"
 	"v/pkg/models"
+	"v/pkg/utils"
 
 	protocol "github.com/fallibilism/protocol/go_protocol"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/adaptor"
 )
 
 func HandleLTIV1CheckRoom(c *fiber.Ctx) error {
@@ -101,4 +105,89 @@ func HandleV1HeaderToken(c *fiber.Ctx) error {
 	}
 
 	return c.Next()
+}
+
+func HandleLTIAuth(c *fiber.Ctx) error {
+	params := c.AllParams()
+
+	if params == nil || len(params) < 1 {
+		return fiber.NewError(fiber.StatusBadRequest, "params is empty")
+	}
+
+	// url
+	host := "http"
+	if c.Secure() {
+		host += "s"
+	}
+
+	if !isLocalhost(c.Hostname()) {
+		return fiber.NewError(fiber.StatusBadRequest, "invalid host. Only secured host is allowed")
+	}
+
+	url := fmt.Sprintf("%s://%s%s", host, c.Hostname(), c.Path())
+	m := models.NewLTIV1Model(config.App)
+
+	httpReq, err := adaptor.ConvertRequest(c, false)
+
+	if err != nil {
+		return err
+	}
+
+	ltis, err := m.LTIVerifyAuth(params, url, httpReq)
+	if err != nil {
+		return err
+	}
+
+	roomId := fmt.Sprintf("%s_%s_%s", ltis.Get("tool_consumer_instance_guid"), ltis.Get("context_id"), ltis.Get("resource_link_id"))
+	userId := ltis.Get("user_id")
+	if userId == "" {
+		userId = utils.GenHash(ltis.Get("lis_person_contact_email_primary"))
+	}
+
+	if userId == "" {
+		return errors.New("either value of user_id or lis_person_contact_email_primary  required")
+	}
+
+	name := ltis.Get("lis_person_name_full")
+	if name == "" {
+		name = "User_" + userId
+	}
+
+	claims := &protocol.LtiAuthClaims{
+		UserId:    userId,
+		Name:      name,
+		IsAdmin:   false,
+		RoomId:    utils.GenHash(roomId),
+		RoomTitle: ltis.Get("context_label"),
+	}
+
+	if strings.Contains(ltis.Get("roles"), "Instructor") {
+		claims.IsAdmin = true
+	}
+
+	tok, err := utils.ClaimsToJWT(claims)
+
+	if err != nil {
+		return err
+	}
+
+	vals := fiber.Map{
+		"Title":   claims.RoomTitle,
+		"Token":   tok,
+		"IsAdmin": claims.IsAdmin,
+	}
+
+	if claims.LtiCustomParameters.LtiCustomDesign != nil {
+		design, err := json.Marshal(claims.LtiCustomParameters.LtiCustomDesign)
+		if err == nil {
+			vals["CustomDesign"] = string(design)
+		}
+
+	}
+
+	return c.Render("assets/lti/v1", vals)
+}
+
+func isLocalhost(host string) bool {
+	return strings.HasPrefix(host, "localhost") || strings.HasPrefix(host, "127.0.0.1") || strings.HasPrefix(host, "0.0.0.0")
 }

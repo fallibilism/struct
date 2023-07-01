@@ -3,7 +3,6 @@ package config
 import (
 	"os"
 	"strconv"
-	"v/pkg/utils"
 
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
@@ -99,8 +98,9 @@ type Config struct {
 	Name         string         `yaml:"name"`
 	Developement bool           `yaml:"developement"`
 	Port         uint           `yaml:"port"`
-	JWTSecret    string         `yaml:"jwt_secret"`
+	JWTSecret    string         `yaml:"jwt_secret"` // LTI and JWT secret
 	JWTIssuer    string         `yaml:"jwt_issuer"`
+	ConsumerKey  string         `yaml:"consumer_key"`
 	Openai       OpenAIConfig   `yaml:"open_ai"`
 	Logging      string         `yaml:"logging"`
 	Postgres     PostgresConfig `yaml:"postgres"`
@@ -112,7 +112,7 @@ func SetConfig(filename string) (conf *Config) {
 	if err := godotenv.Load(); err != nil {
 		panic("config: " + err.Error())
 	}
-	conf, err := utils.ReadFile(filename, &Config{})
+	conf, err := readFile(filename, &Config{})
 	if err != nil {
 		panic("config: " + err.Error())
 	}
