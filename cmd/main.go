@@ -20,12 +20,13 @@ func main() {
 	}
 
 	app := &cli.App{
-		Name:        "struct",
-		Usage:       "video conference system",
+		Name:        "Komrade",
+		Usage:       "Komrade API",
 		Description: "xxx",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "config",
+				Short: 		"c",
 				Usage:       "Configuration file",
 				DefaultText: "config.yaml",
 				Value:       "config.yaml",
