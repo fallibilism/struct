@@ -3,6 +3,6 @@ data
 *.swp
 *.example.*
 bin
-protocol
+# protocol
 config.yaml
 config.dev.yaml

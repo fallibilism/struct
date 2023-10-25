@@ -26,7 +26,7 @@ func main() {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "config",
-				Short: 		"c",
+				Aliases:     []string{"c"},
 				Usage:       "Configuration file",
 				DefaultText: "config.yaml",
 				Value:       "config.yaml",
@@ -62,14 +62,16 @@ func runServer(c *cli.Context) error {
 		sig := <-sigChan
 		log.Panicln("exit requested, shutting down", "signal", sig)
 		_ = router.Shutdown()
+		//
 	}()
+
 	return router.Listen()
 }
 
 // redis and postgres connection setup
 func setupConnections(conf *config.Config) error {
 
-	db, err := config.NewDbConnection(&conf.Postgres)
+	db, err := config.NewDbConnection(&conf.Db)
 	if err != nil {
 		err := fmt.Errorf("could not connect to database: %v", err)
 		return err

@@ -104,12 +104,6 @@ func (r *Routes) routes() {
 	app.Get("/download/uploadedFile/:sid/*", controllers.HandleDownloadUploadedFile)
 	app.Get("/download/recording/:token", controllers.HandleDownloadRecording)
 
-	//livekit
-	lti_v1 := app.Group("/lti", controllers.HandleV1HeaderToken)
-	lti_v1.Get("/", controllers.HandleLTIAuth)
-	lti_v1.Post("/room/join", controllers.HandleLTIV1JoinRoom)
-	lti_v1.Get("/room/check", controllers.HandleLTIV1CheckRoom)
-
 	// all auth group routes require auth header (API key and secret key)
 	auth := app.Group("/auth", controllers.HandleAuthHeaderCheck)
 	auth.Post("/get-client-files", controllers.HandleGetClientFiles)

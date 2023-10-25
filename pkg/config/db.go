@@ -9,12 +9,12 @@ import (
 
 const DBConnectionError = "failed to connect to db"
 
-func NewDbConnection(c *PostgresConfig) (*gorm.DB, error) {
+func NewDbConnection(c *DbConfig) (*gorm.DB, error) {
 	var DSN string
-	if !Conf.Postgres.External {
+	if !Conf.Db.External {
 		DSN = fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=%s", c.Username, c.Password, c.Host, c.Port, c.DBName, c.SslMode)
 	} else {
-		DSN = Conf.Postgres.URI
+		DSN = Conf.Db.URI
 	}
 
 	db, err := gorm.Open(postgres.New(postgres.Config{

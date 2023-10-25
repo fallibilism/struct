@@ -25,8 +25,8 @@ var (
 		Port: "8080",
 		Host: "0.0.0.0",
 	}
-	App        = &AppConfig{}
-	Livekit    = LivekitConfig{
+	App     = &AppConfig{}
+	Livekit = LivekitConfig{
 		Host:   "http://localhost:7880",
 		ApiKey: "api_key",
 		Secret: "secret",
@@ -35,7 +35,7 @@ var (
 )
 
 var Redis *RedisConfig
-var Postgres *PostgresConfig
+var Db *DbConfig
 var Openai *OpenAIConfig
 
 type AppConfig struct {
@@ -73,7 +73,7 @@ type RedisConfig struct {
 	UseTLS   bool   `yaml:"use_tls"`
 }
 
-type PostgresConfig struct {
+type DbConfig struct {
 	Host     string `yaml:"host"`
 	Port     int32  `yaml:"port"`
 	Username string `yaml:"username"`
@@ -102,22 +102,27 @@ type Config struct {
 	ConsumerKey  string         `yaml:"consumer_key"`
 	Openai       OpenAIConfig   `yaml:"open_ai"`
 	Logging      string         `yaml:"logging"`
-	Postgres     PostgresConfig `yaml:"postgres"`
+	Db     DbConfig `yaml:"database"`
 	Redis        RedisConfig    `yaml:"redis"`
 	Livekit      LivekitConfig  `yaml:"livekit"`
 }
 
-func SetConfig(filename string) (conf *Config) {
+func SetConfig(filename string) *Config {
+	var conf *Config
 	if err := godotenv.Load(); err != nil {
-		panic("config: " + err.Error())
+		panic("config: error running environmental variables")
 	}
-	conf, err := readFile(filename, &Config{})
+	conf, err := readFile(filename, conf)
 	if err != nil {
 		panic("config: " + err.Error())
 	}
 
+	if conf == nil {
+		panic("config: config is nil")
+	}
+
 	Openai = &conf.Openai
-	Postgres = &conf.Postgres
+	Db = &conf.Db
 	Redis = &conf.Redis
 	Conf = conf
 
@@ -134,7 +139,7 @@ func SetConfig(filename string) (conf *Config) {
 	}
 
 	if v := os.Getenv("POSTGRES_URI"); v != "" {
-		conf.Postgres.URI = v
+		conf.Db.URI = v
 	}
 
 	return conf

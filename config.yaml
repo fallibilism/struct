@@ -16,6 +16,9 @@ redis:
   db: 1
   use_tls: true
 
+msql: 
+  user: root
+  password: ""
 
 postgres:
   external: true
