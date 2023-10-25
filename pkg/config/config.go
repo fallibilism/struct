@@ -25,7 +25,6 @@ var (
 		Port: "8080",
 		Host: "0.0.0.0",
 	}
-	TestConfig = &AppConfig{} //hack to get Config in test
 	App        = &AppConfig{}
 	Livekit    = LivekitConfig{
 		Host:   "http://localhost:7880",
