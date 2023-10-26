@@ -27,9 +27,6 @@ func (m *RoomAuthModel) IsRoomActive(req *protocol.IsRoomActiveRequest) (bool, e
 		return false, err
 	}
 
-	if r.ID < 1 {
-		return false, errorRoomNotFound
-	}
 	room, err := m.rs.LoadRoom(req.RoomId)
 
 	if err != nil || room == nil {

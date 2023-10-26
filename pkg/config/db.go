@@ -4,10 +4,21 @@ import (
 	"fmt"
 
 	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 const DBConnectionError = "failed to connect to db"
+
+func NewMockDbConnection() (*gorm.DB, error) {
+	  db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+	      if err != nil {
+		              return nil, err
+			          }
+	db.Exec("SELECT 1")
+	fmt.Println("Connected to database successfully")
+	return db, nil
+}
 
 func NewDbConnection(c *DbConfig) (*gorm.DB, error) {
 	var DSN string

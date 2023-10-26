@@ -33,13 +33,7 @@ func NewUserModel(conf *config.AppConfig) *UserModel {
 }
 
 func (u *UserModel) Create(user *User) error {
-	if err := u.db.Create(&User{
-		Id:       user.Id,
-		RoomId:   user.RoomId,
-		Name:     user.Name,
-		Role:     user.Role,
-		IsActive: user.IsActive,
-	}).Error; err != nil {
+	if err := u.db.Create(user).Error; err != nil {
 		return err
 	}
 

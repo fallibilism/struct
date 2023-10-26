@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUser(t *testing.T) {
+func TestRoom(t *testing.T) {
 	testDB, err := config.NewMockDbConnection()
 
 	if err != nil {
@@ -26,19 +26,30 @@ func TestUser(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Cannot connect to database: %v", err)
 	}
+
 	conf := &config.AppConfig{
 		DB: testDB,
 	}
-	t.Run("test user", func(t *testing.T) {
-		user := NewUserModel(conf)
-		err := user.Create(&User{
-			Id:       "1",
-			RoomId:   "1",
-			Name:     "test",
-			Role:     "admin",
+	t.Run("test room", func(t *testing.T) {
+		room := NewRoomModel(conf)
+		err := room.CreateRoom(Room{
+			RoomName: "bystander",
 			IsActive: true,
 		})
 
+		assert.Equal(t, err, nil)
+	})
+
+
+	t.Run("test active rooms", func(t *testing.T) {
+		room := NewRoomModel(conf)
+		var rooms []*Room;
+		rooms, err = room.GetActiveRooms()
+
+		assert.Equal(t, err, nil)
+		_, err = room.GetRoom(rooms[0].RoomId.String())
+		assert.Equal(t, err, nil)
+		_, err = room.GetRoomBySid(rooms[0].Sid)
 		assert.Equal(t, err, nil)
 	})
 }
