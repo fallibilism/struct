@@ -1,10 +1,11 @@
 package config
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
 	"os"
 	"strconv"
 
-	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
@@ -13,9 +14,12 @@ const (
 	ViewPath     = "views"
 	ViewExt      = ".html"
 	Developement = true
+	keySize = 2048
 )
 
 var (
+	BotIdentity = "BOT"
+	RsaPrivateKey *rsa.PrivateKey
 	Prometheus = PrometheusConfig{
 		Enabled:     true,
 		Namespace:   "v",
@@ -32,7 +36,8 @@ var (
 		ApiKey: "api_key",
 		Secret: "secret",
 	}
-	Conf = &Config{}
+	Conf = &Config{
+	}
 )
 
 var Redis *RedisConfig
@@ -82,7 +87,7 @@ type PostgresConfig struct {
 	DBName   string `yaml:"database"`
 	Prefix   string `yaml:"prefix"`
 	SslMode  string `yaml:"sslmode" default:"disable"`
-	TimeZone string `yaml:"timezone" default:"Asia/Jakarta"`
+	TimeZone string `yaml:"timezone"`
 
 	External bool   `yaml:"external"`
 	URI      string `env:"POSTGRES_URI"`
@@ -103,19 +108,32 @@ type Config struct {
 	ConsumerKey  string         `yaml:"consumer_key"`
 	Openai       OpenAIConfig   `yaml:"open_ai"`
 	Logging      string         `yaml:"logging"`
+	Sqlite	string		`yaml:"sqlite"`
 	Postgres     PostgresConfig `yaml:"postgres"`
 	Redis        RedisConfig    `yaml:"redis"`
 	Livekit      LivekitConfig  `yaml:"livekit"`
 }
 
-func SetConfig(filename string) (conf *Config) {
-	if err := godotenv.Load(); err != nil {
-		panic("config: " + err.Error())
+func generateRSAKey(keySize int) (*rsa.PrivateKey, error) {
+	// Generate an RSA private key of the specified key size
+	privateKey, err := rsa.GenerateKey(rand.Reader, keySize)
+	if err != nil {
+		return nil, err
 	}
+
+	return privateKey, nil
+}
+
+func SetConfig(filename string) (conf *Config) {
 	conf, err := readFile(filename, &Config{})
 	if err != nil {
 		panic("config: " + err.Error())
 	}
+	rp, err := generateRSAKey(keySize)
+	if err != nil {
+		panic("config: " + err.Error())
+	}
+	RsaPrivateKey = rp
 
 	Openai = &conf.Openai
 	Postgres = &conf.Postgres

@@ -24,8 +24,6 @@ func TestUser(t *testing.T) {
 	t.Run("test user", func(t *testing.T) {
 		user := NewUserModel(conf)
 		err := user.Create(&User{
-			Id:       "1",
-			RoomId:   "1",
 			Name:     "test",
 			Role:     "admin",
 			IsActive: true,

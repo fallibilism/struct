@@ -2,24 +2,48 @@ package models
 
 import (
 	"errors"
+	"sync"
+	"time"
 	"v/pkg/config"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/lithammer/shortuuid/v4"
 	"gorm.io/gorm"
+)
+
+// user's current state
+type State string
+
+const (
+	ActiveState State = "ACTIVE"
+	ConnectingState State = "CONNECTING"
+	InactiveState State = "INACTIVE"
 )
 
 type UserModel struct {
 	db *gorm.DB
 	rs *RoomService
+	lock sync.Mutex
 }
 
 type User struct {
-	RoomId   string `json:"room_id"`
-	Id       string `json:"id"`
-	Name     string `json:"name"`
-	Role     string `json:"role"`
-	IsActive bool   `json:"is_active"`
+	ID        string `gorm:"unique"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+	RoomId string 
+	State  State
+	Name     string `gorm:"not null"`
+	Role     string 
+	IsActive bool   
 }
+
+func (u *User) BeforeCreate(*gorm.DB) error {
+	u.ID = shortuuid.New()
+	u.IsActive = true
+	return nil
+}
+
 
 const (
 	AdminOnlyError = "You are not authorized to access this room. Only admin can access this room"
@@ -32,17 +56,32 @@ func NewUserModel(conf *config.AppConfig) *UserModel {
 	}
 }
 
-func (u *UserModel) Create(user *User) error {
+func (u *UserModel) Create(name, role string) error {
 	if err := u.db.Create(&User{
-		Id:       user.Id,
-		RoomId:   user.RoomId,
-		Name:     user.Name,
-		Role:     user.Role,
-		IsActive: user.IsActive,
+		Name:	name,
+		Role:	role,
 	}).Error; err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// add user to a room
+func (u *UserModel) AddRoom(user_id, room_id string) error {
+	if err := u.db.Model(&User{}).Where("id = ?", user_id).Update("room_id = ?", room_id).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// alternate between state ["ACTIVE", "CONNECTING", "INACTIVE"]
+func (u *UserModel) ChangeState(user_id string, state State) error {
+	u.lock.Lock()
+	defer u.lock.Unlock()
+	if err := u.db.Model(&User{}).Where("id = ?", user_id).Update("state = ?", state).Error; err != nil {
+		return err
+	}
 	return nil
 }
 

@@ -1,7 +1,9 @@
 data
+stream
 *.sample.*
 *.swp
 *.example.*
 bin
 config.yaml
-config.dev.yaml
+!config.dev.yaml
+.env*

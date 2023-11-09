@@ -27,9 +27,10 @@ func (m *RoomAuthModel) IsRoomActive(req *protocol.IsRoomActiveRequest) (bool, e
 		return false, err
 	}
 
-	if r.ID < 1 {
+	if r.RoomId != "" {
 		return false, errorRoomNotFound
 	}
+
 	room, err := m.rs.LoadRoom(req.RoomId)
 
 	if err != nil || room == nil {
@@ -37,7 +38,7 @@ func (m *RoomAuthModel) IsRoomActive(req *protocol.IsRoomActiveRequest) (bool, e
 		err = m.rm.UpdateRoom(&Room{
 			RoomId:   r.RoomId,
 			IsActive: false,
-			Ended:    time.Now().Format("2006-01-02 15:04:05"),
+			Ended:    time.Now(),
 		})
 
 		if err != nil {
@@ -52,8 +53,8 @@ func (m *RoomAuthModel) IsRoomActive(req *protocol.IsRoomActiveRequest) (bool, e
 
 // end a livekit room given a room id
 func (m *RoomAuthModel) EndRoom(req *protocol.EndRoomRequest) error {
-	m.rm.Lock()
-	defer m.rm.Unlock()
+	m.rm.lock.Lock()
+	defer m.rm.lock.Unlock()
 	room, err := m.rm.GetRoom(req.RoomId)
 
 	if err != nil {
@@ -73,7 +74,7 @@ func (m *RoomAuthModel) EndRoom(req *protocol.EndRoomRequest) error {
 	return m.rm.UpdateRoom(&Room{
 		RoomId:   room.RoomId,
 		IsActive: false,
-		Ended:    time.Now().Format("2008-06-03 15:04:05"),
+		Ended:    time.Now(),
 	})
 
 }

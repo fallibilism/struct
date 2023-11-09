@@ -2,10 +2,14 @@ package models
 
 import (
 	"context"
+	"errors"
 	"sync"
+	"time"
 	"v/pkg/config"
 
 	"github.com/google/uuid"
+	"github.com/lithammer/shortuuid/v4"
+	"github.com/livekit/protocol/livekit"
 	"gorm.io/gorm"
 )
 
@@ -16,29 +20,44 @@ import (
  * It is also used to store the room information in the database
  */
 type Room struct {
-	*gorm.Model
-	Sid          string    `json:"sid"`
-	RoomName     string    `json:"room_name"`
-	RoomId       uuid.UUID `json:"room_id"`
-	Created      string    `json:"created"` // created by who?
-	IsActive     bool      `json:"is_active"`
-	IsRecording  bool      `json:"is_recording"`
-	WebhookUrl   string    `json:"webhook_url"`
-	RecorderId   string    `json:"recorder_id"`
-	IsActiveRTMP bool      `json:"is_active_rtmp"`
-	Ended        string    `json:"ended"`
-	// CreatedAt    time.Time `json:"created_at"` // given by gorm.Model
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+//	Sid          string    `gorm:""`//set later
+	RoomName     string    `gorm:"not null,unique"`
+	RoomId       string `gorm:"unique"`
+	UserId      string    `gorm:""` // created by who?
+	Participants []User `gorm:"foreignKey:RoomId;references:RoomId"`
+	IsActive     bool      
+	IsRecording  bool      `gorm:""`
+	RecorderId   string    `gorm:""`
+	WebhookUrl   string    `gorm:""`
+	IsActiveRTMP bool      `gorm:""`
+	Ended		time.Time 
 }
+
+func (r *Room) BeforeCreate(*gorm.DB) error {
+	r.RoomId = shortuuid.New()
+	r.IsActive = false
+	r.IsRecording = false
+	r.IsActiveRTMP = false
+	return nil
+}
+
+var (
+	RoomDoesNotExistError = errors.New("room does not exist")
+)
 
 type RoomModel struct {
 	app *config.AppConfig
 	db  *gorm.DB
 	ctx context.Context
-	sync.Mutex
+	lock sync.Mutex
 }
 
 func NewRoomModel(conf *config.AppConfig) *RoomModel {
 	return &RoomModel{
+		app: conf,
 		db:  conf.DB,
 		ctx: context.Background(),
 	}
@@ -60,6 +79,55 @@ func (rm *RoomModel) GetRoom(roomId string) (*Room, error) {
 	return &room, nil
 }
 
+// Get info about the room from db by room name
+func (rm *RoomModel) GetRoomByName(room_name string) (*Room, error) {
+	println("roomid: ", room_name)
+	uid, err := uuid.Parse(room_name)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var room Room
+	if err := rm.db.Where("room_name = ?", uid).First(&room).Error; err != nil {
+		return nil, err
+	}
+	return &room, nil
+}
+
+func (rm *RoomModel) JoinRoom(user_id string, room *livekit.Room) (*Room, error) {
+	rm.lock.Lock()
+	var r Room
+
+	if u := rm.db.Model(&Room{}).Preload("User").Where("room_id = ?", room.Metadata).First(&r).Error; u != nil {
+		return nil, RoomDoesNotExistError
+	}
+	println("participants: [", r.Participants , "]")
+
+	if len(r.Participants) > 0 {
+		rm.lock.Unlock()
+		println("bot already connected[room name: ", room.Name, ", count: ", room.NumParticipants)
+		return nil, errors.New("bot already connected")
+	}
+	u := NewUserModel(rm.app)
+
+	if err := u.ChangeState(user_id, ConnectingState); err != nil { 
+		return nil, err
+	}
+	rm.lock.Unlock()
+	
+	
+	tm := NewTokenModel(rm.app)
+	token,err := tm.AddToken(room.Sid, config.BotIdentity)
+	if err != nil {
+		return nil, err
+	}
+
+	println("Bot connected successfully, token: ", token)
+	return nil, nil
+
+
+}
 // Get info about the room from db by sid
 func (rm *RoomModel) GetRoomBySid(sid string) (*Room, error) {
 	var room Room
@@ -79,8 +147,11 @@ func (rm *RoomModel) GetActiveRooms() ([]*Room, error) {
 }
 
 // Create or update room in db
-func (rm *RoomModel) CreateOrUpdateRoom(room *Room) error {
-	if err := rm.db.Save(room).Error; err != nil {
+func (rm *RoomModel) CreateRoom(room_name string, user_id string) error {
+	if err := rm.db.Create(&Room{
+		RoomName: room_name,
+		UserId: user_id,
+	}).Error; err != nil {
 		return err
 	}
 	return nil
@@ -92,7 +163,7 @@ func (rm *RoomModel) UpdateRoom(room *Room) error {
 		return err
 	}
 
-	if len(r) > 1 {
+	if len(r) > 0 {
 		if err := rm.db.Where("room_id = ?", room.RoomId).Updates(room).Error; err != nil {
 			return err
 		}

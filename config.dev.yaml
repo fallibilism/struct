@@ -17,15 +17,7 @@ redis:
   use_tls: true
 
 
-postgres:
-  # host: host.docker.internal
-  host: localhost
-  external: false
-  port: 6379
-  password: password
-  database: struct
-  username: struct
-  sslmode: disable
+sqlite: ./dev.db
 
 prometheus:
   path: /metrics
@@ -34,8 +26,8 @@ prometheus:
   
 livekit:
   host: xxx
-  api_key: xxx
-  password: xxx
+  api_key: devkey
+  secret: secret
   setting: ./livekit.yaml
 
 

@@ -3,12 +3,16 @@ package handlers
 import (
 	"log"
 	"net"
+	"time"
 	"v/pkg/config"
 	"v/pkg/controllers"
 
+	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
+
 	"github.com/ansrivas/fiberprometheus/v2"
 	"github.com/goccy/go-json"
-	"github.com/gofiber/fiber/v2"
+	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -58,7 +62,9 @@ func (r *Routes) Shutdown() error {
 
 	// close database connection
 	// close redis connection
-	r.App.Shutdown()
+	if err := r.App.Shutdown();err != nil {
+		return err
+	}
 
 	log.Printf("Server shutdown successful")
 
@@ -91,8 +97,31 @@ func (r *Routes) routes() {
 		return c.Render("index", nil)
 	})
 
-	app.Get("/login*", func(c *fiber.Ctx) error {
-		return c.Render("login", nil)
+	app.Post("/login", func(c *fiber.Ctx) error {
+				// Create the Claims
+		queries := c.Queries()
+		user_id, ok := queries["user_id"]
+		if !ok {
+			return fiber.ErrUnauthorized
+		}
+		admin := queries["admin"]
+		claims := jwt.MapClaims{
+			"user_id":  user_id,
+			"admin": admin == "true",
+			"exp":   time.Now().Add(time.Hour * 72).Unix(),
+		}
+
+		// Create token
+		token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+
+		// Generate encoded token and send it as response.
+		t, err := token.SignedString(config.RsaPrivateKey)
+		if err != nil {
+			log.Printf("token.SignedString: %v", err)
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+
+		return c.JSON(fiber.Map{"token": t})
 	})
 
 	app.Get("/info", func(c *fiber.Ctx) error {
@@ -104,25 +133,26 @@ func (r *Routes) routes() {
 	app.Get("/download/uploadedFile/:sid/*", controllers.HandleDownloadUploadedFile)
 	app.Get("/download/recording/:token", controllers.HandleDownloadRecording)
 
-	//livekit
-	lti_v1 := app.Group("/lti", controllers.HandleV1HeaderToken)
-	lti_v1.Get("/", controllers.HandleLTIAuth)
-	lti_v1.Post("/room/join", controllers.HandleLTIV1JoinRoom)
-	lti_v1.Get("/room/check", controllers.HandleLTIV1CheckRoom)
-
 	// all auth group routes require auth header (API key and secret key)
-	auth := app.Group("/auth", controllers.HandleAuthHeaderCheck)
-	auth.Post("/get-client-files", controllers.HandleGetClientFiles)
+//	auth := app.Group("/auth", controllers.HandleAuthHeaderCheck)
+//	auth.Post("/get-client-files", controllers.HandleGetClientFiles)
 
-	room := auth.Group("/room")
+	// JWT Middleware
+	app.Use(jwtware.New(jwtware.Config{
+		SigningKey: jwtware.SigningKey{
+			JWTAlg: jwtware.RS256,
+			Key:    config.RsaPrivateKey.Public(),
+		},
+	}))
+
+	room := app.Group("/room")
 	room.Post("/create", controllers.HandleRoomCreate)
-	room.Get("/generate-join-token", controllers.HandleGenerateJoinToken)
-	room.Get("/room-activity", controllers.HandleRoomActivity)
-	room.Get("/active-room-info", controllers.HandleActiveRoomInfo)
-	room.Get("/active-rooms-info", controllers.HandleActiveRoomsInfo)
-	room.Post("/end", controllers.HandleEndRoom)
+	room.Get("/generate-token", controllers.HandleGenerateJoinToken)
+//	room.Get("/room-activity", controllers.HandleRoomActivity)
+//	room.Get("/active-room-info", controllers.HandleActiveRoomInfo)
+//	room.Post("/end", controllers.HandleEndRoom)
 
-	recording := auth.Group("/recording")
+	recording := app.Group("/recording")
 	recording.Post("/fetch", controllers.HandleFetchRecordings)
 	recording.Post("/delete", controllers.HandleDeleteRecording)
 	recording.Get("/generate-download-token", controllers.HandleDownloadToken)
@@ -132,8 +162,10 @@ func (r *Routes) routes() {
 	api.Post("/renew", controllers.HandleRenewToken)
 	api.Post("/revoke", controllers.HandleRevokeToken)
 
+
 	// redirect unknown pages to 404 page
 
+	/*
 	app.Get("*", func(c *fiber.Ctx) error {
 		return c.Render("404", nil)
 
@@ -145,5 +177,8 @@ func (r *Routes) routes() {
 			"msg":   "Page not found",
 		})
 	})
+	*/
 
 }
+
+

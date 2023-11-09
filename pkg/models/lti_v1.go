@@ -52,10 +52,10 @@ type LtiCustomDesign struct {
 	CustomLogo      string `json:"custom_logo,omitempty"`
 }
 
-func NewLTIV1Model(conf *config.AppConfig) *LtiV1 {
+func NewLTIV1Model(app *config.AppConfig, config *config.Config) *LtiV1 {
 	return &LtiV1{
-		authModel:      NewRoomAuthModel(conf),
-		authTokenModel: NewTokenModel(conf),
+		authModel:      NewRoomAuthModel(app),
+		authTokenModel: NewTokenModel(app),
 	}
 }
 
