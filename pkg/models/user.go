@@ -53,7 +53,7 @@ func NewUserModel(conf *config.AppConfig) *UserModel {
 }
 
 func (u *UserModel) Create(name, role string) error {
-	if err := u.db.Create(&User{
+	if err := u.db.Model(&User{}).Create(&User{
 		Name:	name,
 		Role:	role,
 		IsActive: true,
@@ -66,7 +66,7 @@ func (u *UserModel) Create(name, role string) error {
 
 // add user to a room
 func (u *UserModel) AddRoom(user_id, room_id string) error {
-	if err := u.db.Model(&User{}).Where("id = ?", user_id).Update("room_id = ?", room_id).Error; err != nil {
+	if err := u.db.Model(&User{}).Where("id = ?", user_id).Update("room_id", room_id).Error; err != nil {
 		return err
 	}
 	return nil
@@ -82,25 +82,23 @@ func (u *UserModel) ChangeState(user_id string, state protocol.ConnectionState) 
 	return nil
 }
 
-func (u *UserModel) Get(name string) *User {
-	var user *User
-	if err := u.db.Where("name = ?", name).First(user).Error; err != nil {
-		return nil 
+func (u *UserModel) Get(name string) (*User, error) {
+	var user User
+	if err := u.db.Model(&User{}).Where("name = ?", name).First(&user).Error; err != nil {
+		return nil, err
 	}
-	return user
+	return &user, nil
 }
 
-func (u *UserModel) Validation(user_id, room_id string, admin bool) bool {
-	var user *User
+func (u *UserModel) Validation(user_id, room_id, role string) error {
+	var user User
 	u.lock.Lock()
 	defer u.lock.Unlock()
-	if err := u.db.Where("id = ? & room_id = ? & is_admin = ?", user_id, room_id, admin).First(user).Error; err != nil {
-		return false
+	if err := u.db.Where("room_id = ? AND role = ?", room_id, role).First(&user).Error; err != nil {
+	//if err := u.db.Where("room_id = ?", room_id).Where("role = ?", room_id, role).First(&user).Error; err != nil {
+		return err
 	}
-	if u == nil {
-		return false
-	}
-	return true
+	return nil
 }
 
 func (u *UserModel) SwitchPresenter() error {

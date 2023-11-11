@@ -78,8 +78,15 @@ func HandleEndRoom(c *fiber.Ctx) error {
 		return fiber.ErrUnauthorized
 	}
 
+	var role string
+	if admin {
+		role = "admin"
+	} else {
+		role = "user"
+	}
 	um := models.NewUserModel(config.App)
-	if um.Validation(user_id, room_id, admin) {
+	err := um.Validation(user_id, room_id, role) 
+	if err != nil {
 		return fiber.ErrBadRequest
 	}
 
@@ -89,7 +96,7 @@ func HandleEndRoom(c *fiber.Ctx) error {
 	}
 
 	rs := models.NewRoomService(config.App)
-	err := rs.DeleteRoom(room_id)
+	err = rs.DeleteRoom(room_id)
 	if err != nil {
 		return fiber.ErrInternalServerError
 	}
