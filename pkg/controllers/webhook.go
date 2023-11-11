@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"log"
 	"v/pkg/config"
 	"v/pkg/models"
 
@@ -43,16 +42,10 @@ func HandleWebhook(c *fiber.Ctx) error {
 			return nil
 		}
 		rm := models.NewRoomModel(config.App)
-		room, err := rm.GetRoomByName(event.Room.Name)
-		if err != nil {
-			println(err)
-			return err
-		}
 
 		rm.JoinRoom(user_id, event.Room)
 
 	}
 
-	log.Panicf("[%s] Not implemented", "HandleWebhook")
 	return nil
 }

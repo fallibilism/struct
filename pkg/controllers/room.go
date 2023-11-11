@@ -26,8 +26,6 @@ func HandleRoomCreate(c *fiber.Ctx) error {
 	}
 
 	rm := models.NewRoomModel(config.App)
-	rm.Lock()
-	defer rm.Unlock()
 	if _, err := rm.GetRoomByName(room_name); err == nil {
 		return RoomExistsError
 	}

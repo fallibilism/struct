@@ -5,21 +5,17 @@ import (
 	"sync"
 	"time"
 	"v/pkg/config"
-	"v/protocol"
+	protocol "v/protocol/go_protocol"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/lithammer/shortuuid/v4"
 	"gorm.io/gorm"
 )
 
-// user's current state
-type State string
-
-const (
-	ActiveState State = "ACTIVE"
-	ConnectingState State = "CONNECTING"
-	InactiveState State = "INACTIVE"
-	x protocol.State = 3
+var (
+	InactiveState protocol.ConnectionState = *protocol.ConnectionState_INACTIVE.Enum()
+	ActiveState protocol.ConnectionState = *protocol.ConnectionState_ACTIVE.Enum()
+	ConnectiongState protocol.ConnectionState = *protocol.ConnectionState_CONNECTING.Enum()
 )
 
 type UserModel struct {
@@ -34,7 +30,7 @@ type User struct {
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 	RoomId string 
-	State  
+	State  protocol.ConnectionState `gorm:"type:uuid;default:0"`
 	Name     string `gorm:"not null"`
 	Role     string 
 	IsActive bool   
@@ -62,6 +58,7 @@ func (u *UserModel) Create(name, role string) error {
 	if err := u.db.Create(&User{
 		Name:	name,
 		Role:	role,
+		IsActive: true,
 	}).Error; err != nil {
 		return err
 	}
@@ -78,7 +75,7 @@ func (u *UserModel) AddRoom(user_id, room_id string) error {
 }
 
 // alternate between state ["ACTIVE", "CONNECTING", "INACTIVE"]
-func (u *UserModel) ChangeState(user_id string, state State) error {
+func (u *UserModel) ChangeState(user_id string, state protocol.ConnectionState) error {
 	u.lock.Lock()
 	defer u.lock.Unlock()
 	if err := u.db.Model(&User{}).Where("id = ?", user_id).Update("state = ?", state).Error; err != nil {

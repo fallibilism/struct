@@ -5,7 +5,7 @@ import (
 	"time"
 	"v/pkg/config"
 
-	protocol "github.com/fallibilism/protocol/go_protocol"
+	protocol "v/protocol/go_protocol"
 )
 
 type RoomAuthModel struct {

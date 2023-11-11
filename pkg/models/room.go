@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 	"v/pkg/config"
+	protocol "v/protocol/go_protocol"
 
 	"github.com/google/uuid"
 	"github.com/lithammer/shortuuid/v4"
@@ -99,7 +100,7 @@ func (rm *RoomModel) JoinRoom(user_id string, room *livekit.Room) (*Room, error)
 	rm.lock.Lock()
 	var r Room
 
-	if u := rm.db.Model(&Room{}).Preload("User").Where("room_id = ?", room.Metadata).First(&r).Error; u != nil {
+	if u := rm.db.Model(&Room{}).Preload("User").Where("room_id = ?", room.Name).First(&r).Error; u != nil {
 		return nil, RoomDoesNotExistError
 	}
 	println("participants: [", r.Participants , "]")
@@ -111,7 +112,7 @@ func (rm *RoomModel) JoinRoom(user_id string, room *livekit.Room) (*Room, error)
 	}
 	u := NewUserModel(rm.app)
 
-	if err := u.ChangeState(user_id, ConnectingState); err != nil { 
+	if err := u.ChangeState(user_id, protocol.ConnectionState_CONNECTING); err != nil { 
 		return nil, err
 	}
 	rm.lock.Unlock()

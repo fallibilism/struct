@@ -23,11 +23,7 @@ func TestUser(t *testing.T) {
 	}
 	t.Run("test user", func(t *testing.T) {
 		user := NewUserModel(conf)
-		err := user.Create(&User{
-			Name:     "test",
-			Role:     "admin",
-			IsActive: true,
-		})
+		err := user.Create("test", "user")
 
 		assert.Equal(t, err, nil)
 	})
