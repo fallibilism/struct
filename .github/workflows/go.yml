@@ -1,27 +1,5 @@
 # This workflow will build a golang project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
-on:
-  push:
-    branches:
-      - main
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
-      submodules: recursive
-
-    - name: Update Submodules
-      run: git submodule update --init --recursive
-
-    - name: Build
-      run: |
-        # Add your build commands here
-
         
 name: Go
 
