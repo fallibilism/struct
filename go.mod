@@ -6,7 +6,6 @@ require (
 	github.com/gofiber/contrib/jwt v1.0.7
 	github.com/golang-jwt/jwt/v5 v5.1.0
 	github.com/google/uuid v1.3.1
-	github.com/lithammer/shortuuid v3.0.0+incompatible
 	github.com/lithammer/shortuuid/v4 v4.0.0
 	github.com/livekit/protocol v1.8.0
 	github.com/stretchr/testify v1.8.4
@@ -15,9 +14,7 @@ require (
 	gorm.io/driver/sqlite v1.5.4
 )
 
-// When developin, this replace uses the local package instead of a pushed version.
-// replace v/protocol => ./protocol/go_protocol
-replace github.com/fallibilism/protocol => ./protocol
+replace v/protocol => ./protocol/go_protocol // When developin, this replace uses the local package instead of a pushed version.
 
 require (
 	github.com/MicahParks/keyfunc/v2 v2.1.0 // indirect
@@ -105,7 +102,6 @@ require (
 require (
 	github.com/ansrivas/fiberprometheus/v2 v2.6.0
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
-	github.com/fallibilism/protocol v0.0.0-20230615083542-7f20358d88cb
 	github.com/goccy/go-json v0.10.2
 	github.com/gofiber/fiber/v2 v2.49.2
 	github.com/gofiber/template v1.8.1

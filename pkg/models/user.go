@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 	"v/pkg/config"
+	"v/protocol"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/lithammer/shortuuid/v4"
@@ -18,6 +19,7 @@ const (
 	ActiveState State = "ACTIVE"
 	ConnectingState State = "CONNECTING"
 	InactiveState State = "INACTIVE"
+	x protocol.State = 3
 )
 
 type UserModel struct {
@@ -32,7 +34,7 @@ type User struct {
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 	RoomId string 
-	State  State
+	State  
 	Name     string `gorm:"not null"`
 	Role     string 
 	IsActive bool   
