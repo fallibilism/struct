@@ -16,6 +16,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/fiber/v2/middleware/csrf"
 
 	"github.com/gofiber/template/html"
 )
@@ -78,6 +79,12 @@ func (r *Routes) middleware() {
 	}
 
 	r.App.Use(recover.New())
+	r.App.Use(csrf.New(csrf.Config{
+		CookieName: "struct_",
+		Expiration: 30 * 24 * time.Hour,
+		CookieSameSite: "Lax",
+	}))
+
 	r.App.Use(cors.New(cors.Config{
 		AllowMethods: "POST,GET,OPTIONS",
 	}))
