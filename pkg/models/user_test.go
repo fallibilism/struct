@@ -4,7 +4,6 @@ import (
 	"testing"
 	"v/pkg/config"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,29 +23,30 @@ func TestUser(t *testing.T) {
 	t.Run("test user", func(t *testing.T) {
 		user := NewUserModel(conf)
 		err := user.Create("test", "user")
+		assert.Equal(t, err, nil)
 
+		err = user.Create("test2", "admin")
 		assert.Equal(t, err, nil)
 	})
 
 	t.Run("test user validation", func(t *testing.T) {
 		conf := config.TestConfig
 		user := NewUserModel(conf)
-		ctx := &fiber.Ctx{}
-		ctx.Locals("admin", false)
-		ctx.Locals("roomId", "")
-		err := user.Validation(ctx)
+		test := user.Get("test")
+		test2 := user.Get("test2")
+		assert.NotNil(t, test)
+		assert.NotNil(t, test2)
 
-		assert.Equal(t, err, fiber.NewError(fiber.StatusUnauthorized, AdminOnlyError))
 
-		ctx.Locals("admin", true)
-		err = user.Validation(ctx)
+		v := user.Validation(test.ID, test.RoomId, test.Role == "admin")
+		assert.Equal(t, v, false)
 
-		assert.Equal(t, err, fiber.NewError(fiber.StatusNotFound, "Room ID not found"))
+		v = user.Validation(test2.ID, test2.RoomId, test2.Role == "admin")
+		assert.Equal(t, v, true)
 
-		ctx.Locals("roomId", "1")
-		err = user.Validation(ctx)
+		v = user.Validation(test.ID, test.RoomId, test.Role == "user")
+		assert.Equal(t, v, true)
 
-		assert.Equal(t, err, nil)
 
 	})
 }

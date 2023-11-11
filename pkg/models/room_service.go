@@ -5,12 +5,12 @@ import (
 	"errors"
 	"log"
 	"v/pkg/config"
+	protocol "v/protocol/go_protocol"
 
 	"github.com/livekit/protocol/livekit"
 	lksdk "github.com/livekit/server-sdk-go"
 	"gorm.io/gorm"
 
-	"github.com/redis/go-redis/v9"
 )
 
 /**
@@ -21,8 +21,7 @@ import (
  */
 type RoomService struct {
 	app           *config.AppConfig
-	pg            *gorm.DB
-	redis         *redis.Client
+	db            *gorm.DB
 	livekitClient *lksdk.RoomServiceClient
 	ctx           context.Context
 }
@@ -36,11 +35,11 @@ const (
 	errorRoomNotActive = "room is not active"
 )
 
+// a livekit room service
 func NewRoomService(conf *config.AppConfig) *RoomService {
 	livekitClient := lksdk.NewRoomServiceClient(config.Livekit.Host, config.Livekit.ApiKey, config.Livekit.Secret)
 	return &RoomService{
-		pg:            conf.DB,
-		redis:         conf.Redis,
+		db:            conf.DB,
 		livekitClient: livekitClient,
 		ctx:           context.Background(),
 	}
@@ -67,6 +66,37 @@ func (r *RoomService) LoadRoom(roomId string) (*livekit.Room, error) {
 	return rooms.Rooms[0], nil
 }
 
+
+func (rm *RoomService) JoinRoom(user_id string, url string, admin bool, room *livekit.Room) (*Room, error) {
+	var r Room
+
+	if u := rm.db.Model(&Room{}).Preload("User").Where("room_id = ?", room.Name).First(&r).Error; u != nil {
+		return nil, RoomDoesNotExistError
+	}
+	println("participants: [", r.Participants , "]")
+
+	if len(r.Participants) > 0 {
+		println("bot already connected[room name: ", room.Name, ", count: ", room.NumParticipants)
+		return nil, errors.New("bot already connected")
+	}
+	u := NewUserModel(rm.app)
+
+	if err := u.ChangeState(user_id, protocol.ConnectionState_CONNECTING); err != nil { 
+		return nil, err
+	}
+	
+	tm := NewTokenModel(rm.app)
+	token,err := tm.AddToken(room.Sid, config.BotIdentity, admin)
+	if err != nil {
+		return nil, err
+	}
+
+	ConnectGPTParticipant(config.App, token, url)
+	println("Bot connected successfully, token: ", token)
+	return nil, nil
+
+
+}
 // load livekit room participants given a room id
 func (r *RoomService) LoadParticipants(roomId string) ([]*livekit.ParticipantInfo, error) {
 	req := livekit.ListParticipantsRequest{
@@ -105,16 +135,16 @@ func (r *RoomService) CreateRoom(roomId string) (*livekit.Room, error) {
 }
 
 // delete livekit room given a room id
-func (r *RoomService) DeleteRoom(roomId string) (string, error) {
+func (r *RoomService) DeleteRoom(roomId string) (error) {
 	req := livekit.DeleteRoomRequest{
 		Room: roomId,
 	}
 
-	res, err := r.livekitClient.DeleteRoom(r.ctx, &req)
+	_, err := r.livekitClient.DeleteRoom(r.ctx, &req)
 	if err != nil {
 		log.Printf("Error deleting room: %v", err)
-		return "", err
+		return err
 	}
 
-	return res.String(), nil
+	return nil
 }

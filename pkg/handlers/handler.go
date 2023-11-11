@@ -66,7 +66,7 @@ func (r *Routes) Shutdown() error {
 		return err
 	}
 
-	log.Printf("Server shutdown successful")
+	log.Printf("Server shutdown was successful")
 
 	return nil
 }
@@ -129,7 +129,6 @@ func (r *Routes) routes() {
 	})
 
 	app.Get("/health-check", controllers.HandleHealthCheck)
-	app.Post("/webhook", controllers.HandleWebhook)
 	app.Get("/download/uploadedFile/:sid/*", controllers.HandleDownloadUploadedFile)
 	app.Get("/download/recording/:token", controllers.HandleDownloadRecording)
 
@@ -148,9 +147,10 @@ func (r *Routes) routes() {
 	room := app.Group("/room")
 	room.Post("/create", controllers.HandleRoomCreate)
 	room.Get("/generate-token", controllers.HandleGenerateJoinToken)
+	room.Post("/webhook", controllers.HandleWebhook)
+	room.Post("/end", controllers.HandleEndRoom)
 //	room.Get("/room-activity", controllers.HandleRoomActivity)
 //	room.Get("/active-room-info", controllers.HandleActiveRoomInfo)
-//	room.Post("/end", controllers.HandleEndRoom)
 
 	recording := app.Group("/recording")
 	recording.Post("/fetch", controllers.HandleFetchRecordings)

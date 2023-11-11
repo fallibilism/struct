@@ -39,16 +39,26 @@ func NewTokenModel(app *config.AppConfig) *TokenModel {
 	}
 }
 
-func (t *TokenModel) AddToken(room_id, user_id string) (string, error) {
+func (t *TokenModel) AddToken(room_id, user_id string, admin bool) (string, error) {
 	if err := t.db.Where("room_id = ?", room_id).First(&Room{}).Error; err != nil {
 		return "", RoomDoesNotExistError
 	}
 
 	lk_api_key, lk_secret := config.Conf.Livekit.ApiKey,config.Conf.Livekit.Secret
 	at := auth.NewAccessToken(lk_api_key, lk_secret)
-	grant := &auth.VideoGrant{
-		RoomJoin: true,
-		Room:     room_id,
+	var grant *auth.VideoGrant
+	if admin {
+		grant = &auth.VideoGrant{
+			RoomJoin: true,
+			Room:     room_id,
+			RoomCreate: true,
+			RoomAdmin: true,
+		}
+	} else {
+		grant = &auth.VideoGrant{
+			RoomJoin: true,
+			Room:     room_id,
+		}
 	}
 	at.AddGrant(grant).
 		SetIdentity(user_id).

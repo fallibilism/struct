@@ -6,11 +6,8 @@ import (
 	"sync"
 	"time"
 	"v/pkg/config"
-	protocol "v/protocol/go_protocol"
-
 	"github.com/google/uuid"
 	"github.com/lithammer/shortuuid/v4"
-	"github.com/livekit/protocol/livekit"
 	"gorm.io/gorm"
 )
 
@@ -91,44 +88,11 @@ func (rm *RoomModel) GetRoomByName(room_name string) (*Room, error) {
 
 	var room Room
 	if err := rm.db.Where("room_name = ?", uid).First(&room).Error; err != nil {
-		return nil, err
+		return nil, RoomDoesNotExistError
 	}
 	return &room, nil
 }
 
-func (rm *RoomModel) JoinRoom(user_id string, room *livekit.Room) (*Room, error) {
-	rm.lock.Lock()
-	var r Room
-
-	if u := rm.db.Model(&Room{}).Preload("User").Where("room_id = ?", room.Name).First(&r).Error; u != nil {
-		return nil, RoomDoesNotExistError
-	}
-	println("participants: [", r.Participants , "]")
-
-	if len(r.Participants) > 0 {
-		rm.lock.Unlock()
-		println("bot already connected[room name: ", room.Name, ", count: ", room.NumParticipants)
-		return nil, errors.New("bot already connected")
-	}
-	u := NewUserModel(rm.app)
-
-	if err := u.ChangeState(user_id, protocol.ConnectionState_CONNECTING); err != nil { 
-		return nil, err
-	}
-	rm.lock.Unlock()
-	
-	
-	tm := NewTokenModel(rm.app)
-	token,err := tm.AddToken(room.Sid, config.BotIdentity)
-	if err != nil {
-		return nil, err
-	}
-
-	println("Bot connected successfully, token: ", token)
-	return nil, nil
-
-
-}
 // Get info about the room from db by sid
 func (rm *RoomModel) GetRoomBySid(sid string) (*Room, error) {
 	var room Room
@@ -171,4 +135,13 @@ func (rm *RoomModel) UpdateRoom(room *Room) error {
 		return nil
 	}
 	return nil
+}
+
+// Get info about the room from db by sid
+func (rm *RoomModel) DeleteRoom(room_id string) (*Room, error) {
+	var room Room
+	if err := rm.db.Where("room_id = ?", room_id).Delete(&room).Error; err != nil {
+		return nil, err
+	}
+	return &room, nil
 }

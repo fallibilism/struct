@@ -65,7 +65,7 @@ func (m *RoomAuthModel) EndRoom(req *protocol.EndRoomRequest) error {
 		return errorRoomNotFound
 	}
 
-	_, err = m.rs.DeleteRoom(req.RoomId)
+	err = m.rs.DeleteRoom(req.RoomId)
 
 	if err != nil {
 		return err

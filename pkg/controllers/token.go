@@ -47,6 +47,7 @@ func HandleGenerateJoinToken(c *fiber.Ctx) error {
 	}
 
 	room_id := c.Query("room_id")
+	admin := c.Query("admin") == "true"
 
 
 	if room_id == "" {
@@ -57,9 +58,10 @@ func HandleGenerateJoinToken(c *fiber.Ctx) error {
 	tm.Lock()
 	defer tm.Unlock()
 
-	t, err := tm.AddToken(room_id, user_id)
+	t, err := tm.AddToken(room_id, user_id, admin)
 	if err != nil {
-		return err	}
+		return err	
+	}
 
 	return c.JSON(t)
 }

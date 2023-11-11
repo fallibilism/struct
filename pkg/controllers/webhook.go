@@ -10,7 +10,6 @@ import (
 	"github.com/livekit/protocol/auth"
 	"github.com/livekit/protocol/webhook"
 )
-const BotIdentity = "BOT"
 
 func HandleWebhook(c *fiber.Ctx) error {
 
@@ -18,6 +17,7 @@ func HandleWebhook(c *fiber.Ctx) error {
 	claims := user.Claims.(jwt.MapClaims)
 	user_id,ok := claims["user_id"].(string)
 
+	admin := c.Query("admin") == "true"
 	if !ok {
 		return fiber.ErrUnauthorized
 	}
@@ -38,12 +38,12 @@ func HandleWebhook(c *fiber.Ctx) error {
 	}
 	if event.Event == webhook.EventParticipantJoined {
 
-		if event.Participant.Identity == BotIdentity {
+		if event.Participant.Identity == config.BotIdentity {
 			return nil
 		}
-		rm := models.NewRoomModel(config.App)
+		rm := models.NewRoomService(config.App)
 
-		rm.JoinRoom(user_id, event.Room)
+		rm.JoinRoom(user_id, config.Conf.Livekit.Host, admin, event.Room)
 
 	}
 

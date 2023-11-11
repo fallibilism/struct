@@ -7,7 +7,7 @@ import (
 	"v/pkg/config"
 	protocol "v/protocol/go_protocol"
 
-	"github.com/gofiber/fiber/v2"
+
 	"github.com/lithammer/shortuuid/v4"
 	"gorm.io/gorm"
 )
@@ -16,6 +16,7 @@ var (
 	InactiveState protocol.ConnectionState = *protocol.ConnectionState_INACTIVE.Enum()
 	ActiveState protocol.ConnectionState = *protocol.ConnectionState_ACTIVE.Enum()
 	ConnectiongState protocol.ConnectionState = *protocol.ConnectionState_CONNECTING.Enum()
+	ErrUserDoesNotExist error = errors.New("the user does not exist")
 )
 
 type UserModel struct {
@@ -43,9 +44,6 @@ func (u *User) BeforeCreate(*gorm.DB) error {
 }
 
 
-const (
-	AdminOnlyError = "You are not authorized to access this room. Only admin can access this room"
-)
 
 func NewUserModel(conf *config.AppConfig) *UserModel {
 	return &UserModel{
@@ -84,21 +82,25 @@ func (u *UserModel) ChangeState(user_id string, state protocol.ConnectionState) 
 	return nil
 }
 
-func (u *UserModel) Validation(c *fiber.Ctx) error {
-	admin := c.Locals("admin")
-	roomId := c.Locals("roomId")
-
-	if isAdmin, ok := admin.(bool); ok && !isAdmin {
-		if !isAdmin {
-			return fiber.NewError(fiber.StatusUnauthorized, AdminOnlyError)
-		}
+func (u *UserModel) Get(name string) *User {
+	var user *User
+	if err := u.db.Where("name = ?", name).First(user).Error; err != nil {
+		return nil 
 	}
+	return user
+}
 
-	if roomId == "" {
-		return fiber.NewError(fiber.StatusNotFound, "Room ID not found")
+func (u *UserModel) Validation(user_id, room_id string, admin bool) bool {
+	var user *User
+	u.lock.Lock()
+	defer u.lock.Unlock()
+	if err := u.db.Where("id = ? & room_id = ? & is_admin = ?", user_id, room_id, admin).First(user).Error; err != nil {
+		return false
 	}
-
-	return nil
+	if u == nil {
+		return false
+	}
+	return true
 }
 
 func (u *UserModel) SwitchPresenter() error {

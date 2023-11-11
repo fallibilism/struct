@@ -5,6 +5,9 @@ import (
 	"crypto/rsa"
 	"os"
 	"strconv"
+	stt "cloud.google.com/go/speech/apiv1"
+	tts "cloud.google.com/go/texttospeech/apiv1"
+	"github.com/sashabaranov/go-openai"
 
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -47,6 +50,9 @@ var Openai *OpenAIConfig
 type AppConfig struct {
 	DB    *gorm.DB
 	Redis *redis.Client
+	SpeechClient *stt.Client
+	TextClient *tts.Client
+	OpenaiClient *openai.Client
 }
 
 type PrometheusConfig struct {
@@ -97,6 +103,7 @@ type PostgresConfig struct {
 type OpenAIConfig struct {
 	ApiKey string `yaml:"api_key"`
 	Secret string `yaml:"secret"`
+	Token string `yaml:"token"`
 }
 
 type Config struct {
