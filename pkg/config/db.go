@@ -12,13 +12,16 @@ import (
 const DBConnectionError = "failed to connect to db"
 
 func NewDbConnection(c *PostgresConfig) (*gorm.DB, error) {
-	if os.Getenv("ENV") == "development"{ 
-		return newSqliteConnection(c)
+	if os.Getenv("ENV") != "production"{ 
+		return newSqliteConnection("./test.db")
 	}
 	return newPostgresConnection(c)
 }
-func newSqliteConnection(c *PostgresConfig) (*gorm.DB, error) {
-	return gorm.Open(sqlite.Open(Conf.Sqlite))
+func newSqliteConnection(conf string) (*gorm.DB, error) {
+	if conf == "" {
+		conf = Conf.Sqlite
+	}
+	return gorm.Open(sqlite.Open(conf))
 }
 
 func newPostgresConnection(c *PostgresConfig) (*gorm.DB, error) {
